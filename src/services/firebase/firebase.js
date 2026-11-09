@@ -76,6 +76,35 @@ export async function saveTransaction(userId, transaction) {
   });
 }
 
+export async function getAccounts(userId) {
+  const snapshot = await getDocs(query(collection(db, "users", userId, "accounts"), orderBy("createdAt", "asc")));
+  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+}
+
+export async function createAccount(userId, account) {
+  return addDoc(collection(db, "users", userId, "accounts"), {
+    ...account,
+    active: true,
+    createdAt: serverTimestamp(),
+  });
+}
+
+export async function updateAccount(userId, accountId, changes) {
+  return updateDoc(doc(db, "users", userId, "accounts", accountId), changes);
+}
+
+export async function getTransfers(userId) {
+  const snapshot = await getDocs(query(collection(db, "users", userId, "transfers"), orderBy("date", "desc")));
+  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+}
+
+export async function createTransfer(userId, transfer) {
+  return addDoc(collection(db, "users", userId, "transfers"), {
+    ...transfer,
+    createdAt: serverTimestamp(),
+  });
+}
+
 export async function getTransactions(userId) {
   const transactionsQuery = query(
     collection(db, "users", userId, "transactions"),
@@ -87,7 +116,7 @@ export async function getTransactions(userId) {
 
 export async function getCommitments(userId) {
   const snapshot = await getDocs(collection(db, "users", userId, "commitments"));
-  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() })).filter((item) => item.active);
+  return snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
 }
 
 export async function createCommitment(userId, commitment) {
@@ -120,35 +149,80 @@ export async function getCommitmentOccurrences(userId, commitments) {
     id: item.id,
     commitmentId: commitments[index].id,
     ...item.data(),
-    commitmentName: commitments[index].name,
-    commitmentCategory: commitments[index].category,
+    commitmentName: item.data().name || commitments[index].name,
+    commitmentCategory: item.data().category || commitments[index].category,
   }))).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
 
-export async function confirmCommitmentPayment(userId, occurrence, paidAmount, timeZone) {
+export async function updateCommitment(userId, commitmentId, changes, timeZone) {
+  const commitmentRef = doc(db, "users", userId, "commitments", commitmentId);
+  const occurrences = await getDocs(collection(db, "users", userId, "commitments", commitmentId, "occurrences"));
+  const today = financialDateKey(timeZone);
+  const batch = writeBatch(db);
+  batch.update(commitmentRef, changes);
+  occurrences.docs.forEach((item) => {
+    const occurrence = item.data();
+    if (occurrence.status === "pending" && occurrence.dueDate >= today) {
+      batch.update(item.ref, { name: changes.name, category: changes.category, amount: changes.amount });
+    }
+  });
+  await batch.commit();
+}
+
+export async function setCommitmentActive(userId, commitmentId, active, timeZone) {
+  const commitmentRef = doc(db, "users", userId, "commitments", commitmentId);
+  const occurrences = active ? null : await getDocs(collection(db, "users", userId, "commitments", commitmentId, "occurrences"));
+  const today = financialDateKey(timeZone);
+  const batch = writeBatch(db);
+  batch.update(commitmentRef, { active });
+  occurrences?.docs.forEach((item) => {
+    const occurrence = item.data();
+    if (occurrence.status === "pending" && occurrence.dueDate >= today) {
+      batch.update(item.ref, { status: "skipped", skippedAt: serverTimestamp() });
+    }
+  });
+  await batch.commit();
+}
+
+export async function skipCommitmentOccurrence(userId, occurrence) {
+  const occurrenceRef = doc(db, "users", userId, "commitments", occurrence.commitmentId, "occurrences", occurrence.id);
+  const commitmentRef = doc(db, "users", userId, "commitments", occurrence.commitmentId);
+  await runTransaction(db, async (transaction) => {
+    const [currentOccurrence, currentCommitment] = await Promise.all([transaction.get(occurrenceRef), transaction.get(commitmentRef)]);
+    if (!currentOccurrence.exists() || currentOccurrence.data().status !== "pending") throw new Error("Este vencimento ja foi resolvido.");
+    transaction.update(occurrenceRef, { status: "skipped", skippedAt: serverTimestamp() });
+    if (currentCommitment.exists() && currentCommitment.data().frequency === "once") transaction.update(commitmentRef, { active: false });
+  });
+}
+
+export async function confirmCommitmentPayment(userId, occurrence, paidAmount, timeZone, accountId = "", paidDate = "") {
   const occurrenceRef = doc(db, "users", userId, "commitments", occurrence.commitmentId, "occurrences", occurrence.id);
   const transactionRef = doc(collection(db, "users", userId, "transactions"));
   await runTransaction(db, async (transaction) => {
-    const current = await transaction.get(occurrenceRef);
+    const commitmentRef = doc(db, "users", userId, "commitments", occurrence.commitmentId);
+    const [current, commitmentSnapshot] = await Promise.all([transaction.get(occurrenceRef), transaction.get(commitmentRef)]);
     if (!current.exists() || current.data().status !== "pending") {
       throw new Error("Esta conta já foi confirmada ou não está mais pendente.");
     }
     const item = current.data();
-    const paidDate = financialDateKey(timeZone);
+    const paymentDate = paidDate || financialDateKey(timeZone);
     transaction.update(occurrenceRef, {
       status: "paid",
       paidAt: serverTimestamp(),
+      paidDate: paymentDate,
       transactionId: transactionRef.id,
       paidAmount,
     });
+    if (commitmentSnapshot.exists() && commitmentSnapshot.data().frequency === "once") transaction.update(commitmentRef, { active: false });
     transaction.set(transactionRef, {
       type: "expense",
       description: item.name,
       amount: paidAmount,
       category: item.category,
-      date: paidDate,
+      date: paymentDate,
       sourceCommitmentId: occurrence.commitmentId,
       sourceOccurrenceId: occurrence.id,
+      ...(accountId ? { accountId } : {}),
       createdAt: serverTimestamp(),
     });
   });

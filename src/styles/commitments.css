@@ -1,0 +1,77 @@
+.commitments-page .page-heading { align-items: center; }
+.commitment-monthbar { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 20px 0 15px; }
+.commitment-monthbar label { display: flex; align-items: center; gap: 10px; color: #6f7d73; font-size: 10px; font-weight: 700; }
+.commitment-monthbar input { min-height: 38px; padding: 0 10px; border: 1px solid #e1e9e2; border-radius: 10px; color: #2d4033; background: white; font: inherit; }
+.month-step { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid #e5ece6; border-radius: 11px; background: #fff; color: #52715c; font-size: 23px; cursor: pointer; }
+.month-step:hover { border-color: #b9d8c2; background: #f2faf4; }
+.commitment-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-bottom: 16px; }
+.commitment-metrics .panel { display: grid; gap: 6px; padding: 17px 19px; }
+.commitment-metrics span { color: #7d8980; font-size: 10px; }
+.commitment-metrics strong { color: #20382a; font: 700 22px Manrope, sans-serif; }
+.commitment-metrics small { color: #929d95; font-size: 9px; }
+.commitment-metrics .metric-paid strong { color: #218058; }
+.commitment-metrics .metric-pending strong { color: #b77535; }
+.checklist-panel { padding: 19px; }
+.status-filter { display: flex; align-items: center; gap: 8px; color: #7d8980; font-size: 10px; }
+.status-filter select { min-height: 35px; padding: 0 28px 0 10px; border: 1px solid #e2e9e3; border-radius: 9px; background: #fff; color: #3e5043; font: inherit; }
+.occurrence-list { display: grid; gap: 8px; }
+.occurrence-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 13px; padding: 12px; border: 1px solid #edf1ed; border-radius: 13px; background: #fff; }
+.occurrence-date { display: grid; width: 44px; height: 48px; align-content: center; justify-items: center; border-radius: 11px; background: #f2f7f3; color: #2f6442; }
+.occurrence-date b { font: 700 17px Manrope, sans-serif; line-height: 1; }
+.occurrence-date small { margin-top: 4px; font-size: 8px; text-transform: uppercase; }
+.occurrence-details { display: grid; min-width: 0; gap: 4px; }
+.occurrence-details b { overflow: hidden; color: #344439; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.occurrence-details small { color: #849087; font-size: 10px; }
+.occurrence-amount { display: grid; gap: 4px; justify-items: end; white-space: nowrap; }
+.occurrence-amount strong { color: #36483b; font-size: 12px; }
+.occurrence-amount small { color: #89958c; font-size: 9px; }
+.occurrence-actions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.occurrence-actions button { min-height: 32px; padding: 0 10px; border: 1px solid #e0e9e2; border-radius: 9px; background: #fff; color: #52715c; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.occurrence-actions .confirm-occurrence { border-color: #208052; background: #208052; color: #fff; }
+.occurrence-actions .confirm-occurrence:hover { background: #176b42; }
+.occurrence-actions button:hover { background: #f3f8f4; }
+.occurrence-status { justify-self: end; padding: 5px 8px; border-radius: 99px; background: #fff7e9; color: #a66b2e; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.occurrence-status.status-paid { background: #eaf7ee; color: #238052; }
+.occurrence-status.status-overdue { background: #fff0ed; color: #ba5746; }
+.occurrence-status.status-skipped { background: #f0f2f0; color: #7c8780; }
+.commitment-library { margin-top: 24px; }
+.commitment-library > .panel-heading { margin-bottom: 12px; }
+.recurrence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.recurrence-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 15px 17px; border: 1px solid #e9efea; border-radius: 14px; background: #fff; }
+.recurrence-card h3 { margin: 0 0 5px; color: #344439; font: 700 13px Manrope, sans-serif; }
+.recurrence-card p { margin: 0; color: #849087; font-size: 10px; line-height: 1.5; }
+.recurrence-actions { display: flex; align-items: center; gap: 6px; }
+.recurrence-actions button { min-height: 32px; padding: 0 10px; border: 1px solid #e0e9e2; border-radius: 9px; background: #fff; color: #52715c; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.recurrence-actions .pause-recurrence { color: #a66b2e; }
+.recurrence-paused { background: #f7f8f7; }
+.recurrence-paused h3 { color: #718078; }
+.recurrence-state { display: inline-block; margin-left: 5px; padding: 3px 7px; border-radius: 99px; background: #eaf7ee; color: #238052; font: 700 8px Inter, sans-serif; vertical-align: middle; }
+.recurrence-paused .recurrence-state { background: #f0f2f0; color: #7c8780; }
+.commitment-empty { display: grid; gap: 6px; padding: 20px 14px; border: 1px dashed #dce7de; border-radius: 13px; background: #fbfdfb; text-align: center; }
+.commitment-empty b { color: #536559; font: 700 12px Manrope, sans-serif; }
+.commitment-empty span { color: #909b93; font-size: 10px; }
+.editor-recurrence[hidden], .editor-end-date[hidden] { display: none; }
+.month-step:disabled { opacity: .4; cursor: not-allowed; }
+.editor-note-edit { color: #65756a; }
+.payment-context { margin: -4px 0 16px; color: #758279; font-size: 12px; }
+@media (max-width: 900px) { .occurrence-row { grid-template-columns: 48px minmax(0, 1fr) auto; } .occurrence-status { grid-column: 2; justify-self: start; } .occurrence-actions { grid-column: 3; grid-row: 1 / span 2; flex-direction: column; } }
+@media (max-width: 650px) {
+  .commitments-page .page-heading { align-items: flex-start; }
+  .commitment-metrics { grid-template-columns: 1fr; gap: 8px; }
+  .commitment-metrics .panel { grid-template-columns: 1fr auto; align-items: center; padding: 13px 15px; }
+  .commitment-metrics strong { grid-column: 2; grid-row: 1 / span 2; }
+  .commitment-metrics small { grid-column: 1; }
+  .checklist-panel { padding: 14px 11px; }
+  .checklist-panel > .panel-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .occurrence-row { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 8px; padding: 9px; }
+  .occurrence-date { width: 40px; height: 44px; }
+  .occurrence-amount { grid-column: 2; justify-items: start; }
+  .occurrence-actions { grid-column: 3; grid-row: 1 / span 3; }
+  .occurrence-actions button { padding: 0 7px; }
+  .occurrence-status { grid-column: 2; }
+  .recurrence-grid { grid-template-columns: 1fr; }
+  .recurrence-card { grid-template-columns: 1fr; }
+  .recurrence-actions { justify-content: flex-start; }
+  .commitment-monthbar { gap: 8px; }
+  .commitment-monthbar label { gap: 5px; }
+}

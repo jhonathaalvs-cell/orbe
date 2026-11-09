@@ -201,6 +201,10 @@
 }
 
 @media (max-width: 850px) {
+  .sidebar-expand {
+    display: none;
+  }
+
   .main-area {
     margin-left: 0;
   }

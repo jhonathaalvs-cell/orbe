@@ -39,10 +39,11 @@ service cloud.firestore {
         function validTransaction() {
           let data = request.resource.data;
           let hasCommitmentSource = data.keys().hasAny(['sourceCommitmentId', 'sourceOccurrenceId']);
+          let hasAccount = data.keys().hasAny(['accountId']);
           return data.keys().hasAll(['type', 'description', 'amount', 'category', 'date', 'createdAt'])
             && data.keys().hasOnly([
               'type', 'description', 'amount', 'category', 'date', 'createdAt',
-              'sourceCommitmentId', 'sourceOccurrenceId'
+              'sourceCommitmentId', 'sourceOccurrenceId', 'accountId'
             ])
             && data.type in ['income', 'expense']
             && data.description is string
@@ -57,6 +58,8 @@ service cloud.firestore {
             && data.date is string
             && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
             && data.createdAt == request.time
+            && (!hasAccount || (data.accountId is string
+              && get(/databases/$(database)/documents/users/$(userId)/accounts/$(data.accountId)).data.active == true))
             && (!hasCommitmentSource || (
               data.keys().hasAll(['sourceCommitmentId', 'sourceOccurrenceId'])
               && data.sourceCommitmentId is string
@@ -69,6 +72,49 @@ service cloud.firestore {
         allow get, list: if ownsUser(userId);
         allow create: if ownsUser(userId) && validTransaction();
         // Histórico financeiro não pode ser alterado ou removido pelo cliente.
+        allow update, delete: if false;
+      }
+
+      match /accounts/{accountId} {
+        function validAccount() {
+          let data = request.resource.data;
+          return data.keys().hasAll(['name', 'type', 'openingBalance', 'openingDate', 'active', 'createdAt'])
+            && data.keys().hasOnly(['name', 'type', 'openingBalance', 'openingDate', 'active', 'createdAt'])
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 50
+            && data.type in ['checking', 'savings', 'cash', 'investment', 'other']
+            && data.openingBalance is number && data.openingBalance >= 0 && data.openingBalance <= 1000000000
+            && data.openingDate is string && data.openingDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && data.active is bool && data.createdAt == request.time;
+        }
+
+        allow get, list: if ownsUser(userId);
+        allow create: if ownsUser(userId) && validAccount();
+        allow update: if ownsUser(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'active'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 50
+          && request.resource.data.active is bool;
+        allow delete: if false;
+      }
+
+      match /transfers/{transferId} {
+        function validTransfer() {
+          let data = request.resource.data;
+          return data.keys().hasAll(['fromAccountId', 'toAccountId', 'amount', 'description', 'date', 'createdAt'])
+            && data.keys().hasOnly(['fromAccountId', 'toAccountId', 'amount', 'description', 'date', 'createdAt'])
+            && data.fromAccountId is string && data.toAccountId is string
+            && data.fromAccountId != data.toAccountId
+            && get(/databases/$(database)/documents/users/$(userId)/accounts/$(data.fromAccountId)).data.active == true
+            && get(/databases/$(database)/documents/users/$(userId)/accounts/$(data.toAccountId)).data.active == true
+            && data.amount is number && data.amount > 0 && data.amount <= 1000000000
+            && data.description is string && data.description.size() > 0 && data.description.size() <= 80
+            && data.date is string && data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && data.createdAt == request.time;
+        }
+
+        allow get, list: if ownsUser(userId);
+        allow create: if ownsUser(userId) && validTransfer();
         allow update, delete: if false;
       }
 
@@ -98,8 +144,17 @@ service cloud.firestore {
         allow create: if ownsUser(userId) && validCommitment()
           && getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(commitmentId)/occurrences/$(request.resource.data.startDate)).data.commitmentId == commitmentId;
         allow update: if ownsUser(userId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active'])
-          && request.resource.data.active is bool;
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active', 'name', 'amount', 'category'])
+          && request.resource.data.active is bool
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 80
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.amount <= 1000000000
+          && request.resource.data.category is string
+          && request.resource.data.category.size() > 0
+          && request.resource.data.category.size() <= 40;
         allow delete: if false;
 
         match /occurrences/{occurrenceId} {
@@ -118,19 +173,41 @@ service cloud.firestore {
           // Marcar pago e criar a despesa devem ocorrer atomicamente na mesma transação.
           allow update: if ownsUser(userId)
             && resource.data.status == 'pending'
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paidAt', 'transactionId', 'paidAmount'])
-            && request.resource.data.status == 'paid'
-            && request.resource.data.paidAt == request.time
-            && request.resource.data.transactionId is string
-            && request.resource.data.paidAmount is number
-            && request.resource.data.paidAmount > 0
-            && request.resource.data.paidAmount <= 1000000000
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceCommitmentId == commitmentId
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceOccurrenceId == occurrenceId
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.type == 'expense'
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.description == resource.data.name
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.category == resource.data.category
-            && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.amount == request.resource.data.paidAmount;
+            && (
+              (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paidAt', 'paidDate', 'transactionId', 'paidAmount'])
+                && request.resource.data.status == 'paid'
+                && request.resource.data.paidAt == request.time
+                && request.resource.data.paidDate is string
+                && request.resource.data.paidDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+                && request.resource.data.transactionId is string
+                && request.resource.data.paidAmount is number
+                && request.resource.data.paidAmount > 0
+                && request.resource.data.paidAmount <= 1000000000
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceCommitmentId == commitmentId
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceOccurrenceId == occurrenceId
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.type == 'expense'
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.description == resource.data.name
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.category == resource.data.category
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.amount == request.resource.data.paidAmount
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.date == request.resource.data.paidDate)
+              || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'skippedAt'])
+                && request.resource.data.status == 'skipped'
+                && request.resource.data.skippedAt == request.time)
+              || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'category', 'amount'])
+                && request.resource.data.status == 'pending'
+                && request.resource.data.name is string
+                && request.resource.data.name.size() > 0
+                && request.resource.data.name.size() <= 80
+                && request.resource.data.category is string
+                && request.resource.data.category.size() > 0
+                && request.resource.data.category.size() <= 40
+                && request.resource.data.amount is number
+                && request.resource.data.amount > 0
+                && request.resource.data.amount <= 1000000000
+                && request.resource.data.name == getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(commitmentId)).data.name
+                && request.resource.data.category == getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(commitmentId)).data.category
+                && request.resource.data.amount == getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(commitmentId)).data.amount)
+            );
           allow delete: if false;
         }
       }

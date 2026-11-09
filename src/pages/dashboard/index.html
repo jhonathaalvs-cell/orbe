@@ -1,5 +1,23 @@
-
-    
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101b17" />
+  <meta name="description" content="Resumo da sua vida financeira no Orbe." />
+  <base href="../../../" />
+  <title>Visão geral | Orbe</title>
+  <link rel="stylesheet" href="src/styles/base.css" />
+  <link rel="stylesheet" href="src/styles/layout.css" />
+  <link rel="stylesheet" href="src/styles/components.css" />
+  <link rel="stylesheet" href="src/styles/dashboard.css" />
+  <link rel="stylesheet" href="src/styles/dialogs.css" />
+  <link rel="stylesheet" href="src/styles/responsive.css" />
+  <link rel="stylesheet" href="src/styles/sidebar-nav.css" />
+  <link rel="stylesheet" href="src/styles/mobile-nav.css" />
+</head>
+<body data-standalone-dashboard="true">
+  <main id="dashboardRoot" aria-live="polite">
     <div class="app-shell">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-expand" id="sidebarExpand" type="button" aria-label="Expandir navegação" aria-expanded="false" title="Abrir navegação">☰</button>
@@ -45,8 +63,7 @@
             <button class="mobile-nav-item" id="mobileMore" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><small>Menu</small></button>
         </nav>
         <main class="main-area">
-            <header class="topbar"><button class="icon-button mobile-menu" id="menuToggle"
-                    aria-label="Abrir menu">☰</button>
+            <header class="topbar">
                 <div class="breadcrumb">Meu espaço <span>/</span> <b id="pageTitle">Visão geral</b></div>
                 <div class="top-actions"><button class="icon-button" aria-label="Pesquisar">⌕</button><button
                         class="icon-button notification-button" aria-label="Notificações">♧<i></i></button>
@@ -191,7 +208,7 @@
                             </table>
                         </div>
                     </article>
-                    <article class="panel upcoming-panel"><div class="panel-heading"><div><h2>Compromissos reais</h2><p>Vencimentos gerados e confirmáveis</p></div><button class="button button-quiet" id="addCommitment" type="button">＋ Novo</button></div><div id="commitmentList"><div class="empty-transactions">Carregando compromissos...</div></div><a class="calendar-link" href="#calendario" data-page="calendario">As contas pendentes nunca são marcadas como pagas automaticamente</a></article>
+                    <article class="panel upcoming-panel"><div class="panel-heading"><div><h2>Compromissos reais</h2><p>Vencimentos gerados e confirmáveis</p></div><button class="button button-quiet" id="addCommitment" type="button">＋ Novo</button></div><div id="commitmentList"><div class="empty-transactions">Carregando compromissos...</div></div><a class="calendar-link" href="#compromissos" data-page="compromissos">Abrir checklist mensal</a></article>
                 </section>
                 <footer class="footer"><span>© 2026 Orbe. Seu futuro, bem cuidado.</span><span>Feito para trazer clareza
                         <b>✳</b></span></footer>
@@ -220,4 +237,36 @@
         </form>
     </dialog>
     <dialog id="commitmentDialog" class="modal"><form method="dialog" id="commitmentForm"><div class="modal-heading"><div><span class="eyebrow">COMPROMISSO FINANCEIRO</span><h2>Novo compromisso</h2></div><button class="icon-button commitment-close" type="button" aria-label="Fechar">×</button></div><label>Nome<input name="name" required maxlength="80" placeholder="Ex.: Conta de energia" /></label><div class="form-row"><label>Valor previsto (R$)<input name="amount" required type="number" min="0.01" step="0.01" /></label><label>Categoria<input name="category" required maxlength="40" placeholder="Moradia" /></label></div><div class="form-row"><label>Frequência<select name="frequency" required><option value="once">Única</option><option value="daily">Diária</option><option value="weekly">Semanal</option><option value="monthly" selected>Mensal</option><option value="yearly">Anual</option></select></label><label>Primeiro vencimento<input name="startDate" type="date" required /></label></div><label>Repetir até (opcional)<input name="endDate" type="date" /></label><p class="form-note">O sistema cria vencimentos e lembretes. Pagamentos só entram no histórico após sua confirmação.</p><div class="modal-actions"><button class="button button-quiet commitment-close" type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar compromisso</button></div></form></dialog>  <div class="toast" id="toast" role="status"></div>
-    
+  </main>
+  <script type="module">
+    import { firebaseReady, observeAuth } from "src/services/firebase/firebase.js";
+    import { mountDashboardPage } from "src/pages/dashboard/dashboard.js";
+
+    const root = document.querySelector("#dashboardRoot");
+
+    function showMessage(message) {
+      const paragraph = document.createElement("p");
+      paragraph.setAttribute("role", "status");
+      paragraph.textContent = message;
+      root.replaceChildren(paragraph);
+    }
+
+    if (!firebaseReady) {
+      showMessage("O Firebase não está configurado. Configure src/services/firebase/firebase-config.local.js para abrir o painel.");
+    } else {
+      observeAuth(async (user) => {
+        if (!user) {
+          window.location.assign("src/pages/login/index.html");
+          return;
+        }
+
+        try {
+          await mountDashboardPage(user);
+        } catch (error) {
+          showMessage(error.message || "Não foi possível abrir o painel.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>

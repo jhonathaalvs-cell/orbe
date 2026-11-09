@@ -136,7 +136,8 @@ exports.generateCommitmentOccurrences = onSchedule({
     const commitmentId = snapshot.id;
     const occurrences = snapshot.ref.collection('occurrences');
 
-    for (let offset = 0; offset <= 7; offset += 1) {
+    // Keep a full month of checklist occurrences available in the client.
+    for (let offset = 0; offset <= 40; offset += 1) {
       const dueDate = addDays(today, offset);
       if (!isScheduledFor(commitment, dueDate)) continue;
       await createOccurrenceIfMissing(userId, commitmentId, commitment, dueDate, today, preferences.commitmentDue !== false);

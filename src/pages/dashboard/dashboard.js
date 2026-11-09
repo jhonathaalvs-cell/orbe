@@ -5,6 +5,8 @@ import {
   getCommitmentOccurrences,
   getCommitments,
   getNotifications,
+  getAccounts,
+  getTransfers,
   getTransactions,
   getUserProfile,
   logOut,
@@ -22,7 +24,17 @@ let activeUser = null;
 let currentTransactions = [];
 let currentCommitments = [];
 let currentOccurrences = [];
+let currentAccounts = [];
+let currentTransfers = [];
 let toastTimer;
+
+document.addEventListener('pointerdown', (event) => {
+  const sidebar = document.querySelector('#sidebar');
+  const mobileMore = document.querySelector('#mobileMore');
+  if (!sidebar?.classList.contains('open') || sidebar.contains(event.target) || mobileMore?.contains(event.target)) return;
+  sidebar.classList.remove('open');
+  mobileMore?.setAttribute('aria-expanded', 'false');
+});
 
 function showToast(message) {
   toast.textContent = message;
@@ -51,6 +63,14 @@ async function loadDashboard(user) {
   try {
     const [transactions, commitments, profile] = await Promise.all([getTransactions(user.uid), getCommitments(user.uid), getUserProfile(user)]);
     if (activeUser?.uid !== user.uid) return;
+    let accounts = [];
+    let transfers = [];
+    try {
+      [accounts, transfers] = await Promise.all([getAccounts(user.uid), getTransfers(user.uid)]);
+    } catch {
+      showToast('Publique as regras atualizadas do Firestore para carregar contas e carteiras.');
+    }
+    if (activeUser?.uid !== user.uid) return;
     money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: profile.currency || 'BRL' });
     profileTimeZone = profile.timeZone || 'America/Sao_Paulo';
     document.querySelector('#profileName').textContent = profile.name;
@@ -59,15 +79,37 @@ async function loadDashboard(user) {
     if (activeUser?.uid !== user.uid) return;
     currentTransactions = transactions;
     currentCommitments = commitments;
+    currentAccounts = accounts;
+    currentTransfers = transfers;
     currentOccurrences = occurrences;
     renderTransactions(transactions);
-    renderFinanceSummary(transactions, occurrences);
+    renderTransactionAccountOptions(accounts);
+    renderFinanceSummary(transactions, occurrences, accounts);
     renderCommitments(occurrences);
     refreshNotificationIndicator(user);
   } catch (error) {
     rows.innerHTML = '<tr><td colspan="4" class="empty-transactions">Não foi possível carregar seus dados financeiros.</td></tr>';
     showToast(firebaseErrorMessage(error));
   }
+}
+
+function renderTransactionAccountOptions(accounts) {
+  let select = form.elements.accountId;
+  if (!select) {
+    const label = document.createElement('label');
+    label.innerHTML = 'Conta ou carteira<select name="accountId"></select>';
+    select = label.querySelector('select');
+    form.querySelector('.form-note').before(label);
+  }
+  const active = accounts.filter(account => account.active);
+  select.innerHTML = active.length
+    ? `<option value="">Selecione uma conta</option>${active.map(account => `<option value="${escapeHtml(account.id)}">${escapeHtml(account.name)}</option>`).join('')}`
+    : '<option value="">Sem conta vinculada</option>';
+  select.required = active.length > 0;
+  select.onchange = () => {
+    const selected = active.find(account => account.id === select.value);
+    form.elements.date.min = selected?.openingDate || '';
+  };
 }
 
 async function refreshNotificationIndicator(user) {
@@ -91,11 +133,12 @@ function renderTransactions(transactions) {
   rows.innerHTML = transactions.slice(0, 8).map(item => {
       const date = new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
       const income = item.type === 'income';
-      return `<tr><td><span class="transaction-icon ${income ? 'salary' : 'market'}">${income ? '↙' : '↗'}</span><span class="row-title">${escapeHtml(item.description)}</span><small>Na sua conta</small></td><td><span class="category-pill">${escapeHtml(item.category)}</span></td><td>${date}</td><td class="${income ? 'value-positive' : 'value-negative'}">${income ? '+' : '−'} ${money.format(item.amount)}</td></tr>`;
+      const accountName = currentAccounts.find(account => account.id === item.accountId)?.name || 'Sem conta vinculada';
+      return `<tr><td><span class="transaction-icon ${income ? 'salary' : 'market'}">${income ? '↙' : '↗'}</span><span class="row-title">${escapeHtml(item.description)}</span><small>${escapeHtml(accountName)}</small></td><td><span class="category-pill">${escapeHtml(item.category)}</span></td><td>${date}</td><td class="${income ? 'value-positive' : 'value-negative'}">${income ? '+' : '−'} ${money.format(item.amount)}</td></tr>`;
     }).join('');
 }
 
-function renderFinanceSummary(transactions, occurrences) {
+function renderFinanceSummary(transactions, occurrences, accounts = []) {
   const [year, month, day] = todayKey().split('-').map(Number);
   const now = new Date(year, month - 1, day, 12);
   document.querySelector('.page-heading .eyebrow').innerHTML = `<span class="live-dot"></span> ${now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).toLocaleUpperCase('pt-BR')}`;
@@ -104,11 +147,20 @@ function renderFinanceSummary(transactions, occurrences) {
   const sum = (items, type) => items.filter(item => item.type === type).reduce((total, item) => total + item.amount, 0);
   const income = sum(monthTransactions, 'income');
   const expenses = sum(monthTransactions, 'expense');
-  const allTimeBalance = sum(transactions, 'income') - sum(transactions, 'expense');
+  const unassignedBalance = accounts.length ? 0 : transactions.filter(item => !item.accountId).reduce((total, item) => total + (item.type === 'income' ? item.amount : -item.amount), 0);
+  const accountBalance = accounts.reduce((total, account) => {
+    const since = account.openingDate || '0000-00-00';
+    const movementTotal = transactions.filter(item => item.accountId === account.id && item.date >= since)
+      .reduce((sum, item) => sum + (item.type === 'income' ? item.amount : -item.amount), 0);
+    const transferTotal = currentTransfers.filter(item => item.date >= since)
+      .reduce((sum, item) => sum + (item.toAccountId === account.id ? item.amount : item.fromAccountId === account.id ? -item.amount : 0), 0);
+    return total + (account.openingBalance || 0) + movementTotal + transferTotal;
+  }, 0);
+  const allTimeBalance = accountBalance + unassignedBalance;
   const pending = occurrences.filter(item => item.status === 'pending');
   const cards = document.querySelectorAll('.summary-card');
   cards[0].querySelector('.amount').textContent = money.format(allTimeBalance);
-  cards[0].querySelector('.card-foot').innerHTML = '<span>saldo líquido</span><span>das movimentações registradas</span>';
+  cards[0].querySelector('.card-foot').innerHTML = '<span>saldo registrado</span><span>das contas e movimentações</span>';
   cards[1].querySelector('.amount').textContent = money.format(income);
   cards[2].querySelector('.amount').textContent = money.format(expenses);
   cards[3].querySelector('.amount').textContent = money.format(pending.reduce((total, item) => total + item.amount, 0));
@@ -150,7 +202,7 @@ function renderFinanceSummary(transactions, occurrences) {
 function renderCommitments(occurrences) {
   const list = document.querySelector('#commitmentList');
   const today = todayKey();
-  const visible = occurrences.filter(item => item.status === 'pending' || item.dueDate >= today).slice(0, 6);
+  const visible = occurrences.filter(item => item.status !== 'skipped' && (item.status === 'pending' || item.dueDate >= today)).slice(0, 6);
   if (!visible.length) {
     list.innerHTML = '<div class="empty-transactions">Nenhum vencimento previsto. Crie um compromisso para começar.</div>';
     return;
@@ -160,7 +212,7 @@ function renderCommitments(occurrences) {
     const dateParts = due.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').split(' ');
     const overdue = item.status === 'pending' && item.dueDate < today;
     const status = item.status === 'paid' ? '<span class="commitment-status paid-status">Pago</span>' : overdue ? '<span class="commitment-status overdue-status">Pendente em atraso</span>' : '<span class="commitment-status">Pendente</span>';
-    const action = item.status === 'pending' ? `<button class="confirm-payment" type="button" data-commitment="${escapeHtml(item.commitmentId)}" data-occurrence="${escapeHtml(item.id)}">Confirmar pagamento</button>` : '';
+    const action = item.status === 'pending' ? '<a class="confirm-payment" href="#compromissos" data-page="compromissos">Abrir checklist</a>' : '';
     const displayedAmount = item.status === 'paid' ? item.paidAmount : item.amount;
     return `<div class="commitment"><div class="date-box"><b>${dateParts[0]}</b><small>${dateParts[1]}</small></div><div class="commitment-name"><b>${escapeHtml(item.commitmentName || item.name)}</b><small>${escapeHtml(item.commitmentCategory || item.category)} · ${status}</small></div><strong>${money.format(displayedAmount)}</strong>${action}</div>`;
   }).join('');
@@ -168,6 +220,8 @@ function renderCommitments(occurrences) {
 
 export function mountDashboardPage(user) {
   activeUser = user;
+  currentAccounts = [];
+  currentTransfers = [];
   dialog = document.querySelector('#transactionDialog');
   form = document.querySelector('#transactionForm');
   toast = document.querySelector('#toast');
@@ -189,6 +243,13 @@ document.querySelector('#addTransaction').addEventListener('click', () => {
   form.reset();
   form.elements.date.value = todayKey();
   form.elements.date.max = todayKey();
+  const firstAccount = currentAccounts.find(account => account.active);
+  if (firstAccount) {
+    form.elements.accountId.value = firstAccount.id;
+    form.elements.date.min = firstAccount.openingDate || '';
+  } else {
+    form.elements.date.min = '';
+  }
   dialog.showModal();
 });
 document.querySelectorAll('.close-modal').forEach(button => button.addEventListener('click', () => dialog.close()));
@@ -203,6 +264,11 @@ form.addEventListener('submit', async event => {
     category: String(data.get('category')).trim(),
     date: String(data.get('date')),
   };
+  const accountId = String(data.get('accountId') || '');
+  if (accountId) transaction.accountId = accountId;
+  if (currentAccounts.some(account => account.active) && !currentAccounts.some(account => account.id === accountId && account.active)) return showToast('Selecione uma conta ou carteira ativa.');
+  const selectedAccount = currentAccounts.find(account => account.id === accountId);
+  if (selectedAccount && transaction.date < selectedAccount.openingDate) return showToast('A data da movimentação deve ser igual ou posterior à data inicial da conta.');
   if (!transaction.description || !transaction.category || !Number.isFinite(transaction.amount) || transaction.amount <= 0 || !transaction.date || transaction.date > todayKey()) return showToast('Registre somente movimentações já realizadas.');
   const saveButton = form.querySelector('[type="submit"]');
   saveButton.disabled = true;
@@ -267,10 +333,19 @@ document.querySelector('#commitmentList').addEventListener('click', async event 
   if (paidInput === null) return;
   const paidAmount = Number(paidInput.trim().replace(/\./g, '').replace(',', '.'));
   if (!Number.isFinite(paidAmount) || paidAmount <= 0 || paidAmount > 1000000000) return showToast('Informe um valor pago válido.');
+  const activeAccounts = currentAccounts.filter(account => account.active);
+  let paymentAccountId = '';
+  if (activeAccounts.length) {
+    const accountChoice = window.prompt(`Em qual conta registrar o pagamento?\n${activeAccounts.map((account, index) => `${index + 1}. ${account.name}`).join('\n')}`, '1');
+    if (accountChoice === null) return;
+    const selectedAccount = activeAccounts[Number(accountChoice) - 1];
+    if (!selectedAccount) return showToast('Escolha o número de uma conta válida.');
+    paymentAccountId = selectedAccount.id;
+  }
   if (!window.confirm(`Confirmar pagamento de ${money.format(paidAmount)}? Uma despesa será registrada na mesma operação.`)) return;
   button.disabled = true;
   try {
-    await confirmCommitmentPayment(activeUser.uid, occurrence, paidAmount, profileTimeZone);
+    await confirmCommitmentPayment(activeUser.uid, occurrence, paidAmount, profileTimeZone, paymentAccountId);
     await loadDashboard(activeUser);
     showToast('Pagamento confirmado e registrado uma única vez.');
   } catch (error) {
@@ -295,7 +370,6 @@ document.querySelector('.notification-button').addEventListener('click', async (
 document.querySelector('#addGoal').addEventListener('click', () => showToast('O cadastro de metas será desenvolvido na próxima etapa.'));
 document.querySelector('#periodButton').addEventListener('click', () => showToast('O filtro de períodos será implementado com os relatórios.'));
 document.querySelector('#chartPeriod').addEventListener('click', () => showToast('O gráfico mostra suas receitas e despesas dos últimos seis meses.'));
-document.querySelector('#menuToggle').addEventListener('click', () => document.querySelector('#sidebar').classList.toggle('open'));
 const sidebar = document.querySelector('#sidebar');
 const sidebarExpand = document.querySelector('#sidebarExpand');
 sidebarExpand.addEventListener('click', () => {

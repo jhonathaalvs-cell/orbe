@@ -35,9 +35,9 @@ A automação agendada usa Cloud Scheduler e pode exigir o plano Blaze/billing h
 ```text
 public/                  arquivos públicos, manifest, logo e service worker
 src/app/                  entrada e roteamento da aplicação
-src/pages/auth/           login e cadastro
+src/pages/login/          login e cadastro
 src/pages/dashboard/      dashboard e interações financeiras
-src/pages/profile/        perfil do usuário e preferências
+src/pages/perfil/         perfil do usuário e preferências
 src/assets/               imagens e demais ativos da interface
 src/components/           componentes de layout, formulários, gráficos e tabelas
 src/config/               configuração da aplicação

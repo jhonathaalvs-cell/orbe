@@ -7,6 +7,8 @@ const pageStyles = {
   auth: ["components.css", "auth.css"],
   dashboard: ["layout.css", "components.css", "dashboard.css", "dialogs.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css"],
   profile: ["layout.css", "components.css", "responsive.css", "profile.css", "sidebar-nav.css", "mobile-nav.css"],
+  accounts: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "accounts.css"],
+  commitments: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "commitments.css"],
 };
 const pageStyleLoads = new WeakMap();
 
@@ -65,7 +67,18 @@ async function renderPage(path, mount, isAuthenticated, stylePage) {
     if (!response.ok) throw new Error(`Não foi possível carregar ${path}.`);
     const markup = await response.text();
     if (version !== renderVersion) return;
-    appRoot.innerHTML = markup;
+    const contentSelector = {
+      "src/pages/dashboard/index.html": "#dashboardRoot",
+      "src/pages/login/index.html": "#authGate",
+    }[path];
+    if (contentSelector) {
+      const pageDocument = new DOMParser().parseFromString(markup, "text/html");
+      const pageContent = pageDocument.querySelector(contentSelector);
+      if (!pageContent) throw new Error("O conteúdo da página não foi encontrado.");
+      appRoot.innerHTML = contentSelector === "#dashboardRoot" ? pageContent.innerHTML : pageContent.outerHTML;
+    } else {
+      appRoot.innerHTML = markup;
+    }
     await mount(version);
   } catch (error) {
     if (version !== renderVersion) return;
@@ -81,7 +94,7 @@ async function renderPage(path, mount, isAuthenticated, stylePage) {
 
 function showLogin() {
   currentUser = null;
-  return renderPage("src/pages/login/view.html", async () => {
+  return renderPage("src/pages/login/index.html", async () => {
     const { mountLoginPage } = await import("../pages/login/login.js");
     mountLoginPage();
   }, false, "auth");
@@ -101,13 +114,16 @@ async function showProfile(user) {
   appRoot.setAttribute("aria-busy", "true");
   try {
     if (!await loadPageStyles("profile", version)) return;
-    const response = await fetch("src/pages/perfil/view.html");
+    const response = await fetch("src/pages/perfil/index.html");
     if (!response.ok) throw new Error("Não foi possível carregar a página de perfil.");
     const markup = await response.text();
     if (version !== renderVersion) return;
+    const profileDocument = new DOMParser().parseFromString(markup, "text/html");
+    const profilePage = profileDocument.querySelector("#profileRoot");
+    if (!profilePage) throw new Error("O conteúdo do perfil não foi encontrado.");
     const content = appRoot.querySelector(".content");
     if (!content) return showDashboard(user);
-    content.innerHTML = markup;
+    content.innerHTML = profilePage.innerHTML;
     document.querySelector("#pageTitle").textContent = "Meu perfil";
     const { mountProfilePage } = await import("../pages/perfil/profile.js");
     if (version === renderVersion) await mountProfilePage(user);
@@ -115,6 +131,58 @@ async function showProfile(user) {
     if (version === renderVersion) {
       const content = appRoot.querySelector(".content");
       if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir o perfil</h1><p>${error.message}</p></section>`;
+    }
+  } finally {
+    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
+  }
+}
+
+async function showAccounts(user) {
+  if (!user) return showLogin();
+  const version = ++renderVersion;
+  appRoot.setAttribute("aria-busy", "true");
+  try {
+    if (!await loadPageStyles("accounts", version)) return;
+    const response = await fetch("src/pages/contas/index.html");
+    if (!response.ok) throw new Error("Não foi possível carregar contas e carteiras.");
+    const markup = await response.text();
+    if (version !== renderVersion) return;
+    const content = appRoot.querySelector(".content");
+    if (!content) return showDashboard(user);
+    content.innerHTML = markup;
+    document.querySelector("#pageTitle").textContent = "Contas e carteiras";
+    const { mountAccountsPage } = await import("../pages/contas/accounts.js");
+    if (version === renderVersion) mountAccountsPage(user);
+  } catch (error) {
+    if (version === renderVersion) {
+      const content = appRoot.querySelector(".content");
+      if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir contas e carteiras</h1><p>${error.message}</p></section>`;
+    }
+  } finally {
+    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
+  }
+}
+
+async function showCommitments(user) {
+  if (!user) return showLogin();
+  const version = ++renderVersion;
+  appRoot.setAttribute("aria-busy", "true");
+  try {
+    if (!await loadPageStyles("commitments", version)) return;
+    const response = await fetch("src/pages/compromissos/index.html");
+    if (!response.ok) throw new Error("Não foi possível carregar os compromissos.");
+    const markup = await response.text();
+    if (version !== renderVersion) return;
+    const content = appRoot.querySelector(".content");
+    if (!content) return showDashboard(user);
+    content.innerHTML = markup;
+    document.querySelector("#pageTitle").textContent = "Compromissos";
+    const { mountCommitmentsPage } = await import("../pages/compromissos/commitments.js");
+    if (version === renderVersion) mountCommitmentsPage(user);
+  } catch (error) {
+    if (version === renderVersion) {
+      const content = appRoot.querySelector(".content");
+      if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir compromissos</h1><p>${error.message}</p></section>`;
     }
   } finally {
     if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
@@ -142,9 +210,11 @@ appRoot.addEventListener("click", (event) => {
   document.querySelector("#mobileMore")?.setAttribute("aria-expanded", "false");
 
   if (page === "perfil") return showProfile(currentUser);
+  if (page === "contas") return showAccounts(currentUser);
+  if (page === "compromissos") return showCommitments(currentUser);
   if (page === "inicio") return showDashboard(currentUser);
-  if (page === "compromissos" || page === "movimentacoes") {
-    const selector = page === "compromissos" ? ".upcoming-panel" : ".transactions-panel";
+  if (page === "movimentacoes") {
+    const selector = ".transactions-panel";
     if (appRoot.querySelector(selector)) appRoot.querySelector(selector).scrollIntoView({ behavior: "smooth", block: "center" });
     else showDashboard(currentUser).then(() => appRoot.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "center" }));
     return;
@@ -160,6 +230,7 @@ appRoot.addEventListener("click", (event) => {
 window.addEventListener("orbe:navigate", (event) => {
   if (event.detail?.page === "inicio") showDashboard(currentUser);
   if (event.detail?.page === "perfil") showProfile(currentUser);
+  if (event.detail?.page === "compromissos") showCommitments(currentUser);
 });
 
 if (firebaseReady) {
