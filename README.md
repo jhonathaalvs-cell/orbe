@@ -8,7 +8,7 @@ Sirva a pasta por HTTP em localhost (por exemplo, com a extensão Live Server do
 
 ## Firebase
 
-1. A configuração recebida está em `src/services/firebase/firebase-config.local.js`, arquivo ignorado pelo Git. Ele contém a configuração pública do app web, não uma chave privada.
+1. A configuração pública do app web fica em `src/services/firebase/firebase-config.js` e é necessária para publicar o site estático. Ela não contém uma chave privada; o acesso aos dados é protegido pelas regras do Firestore.
 2. No Firebase Console, ative **Authentication → Email/Password** e crie a base do **Cloud Firestore**.
 3. Publique as regras atualizadas de `firestore.rules` pelo Firebase Console ou Firebase CLI.
 4. Instale Node.js 22 e Firebase CLI, autentique com `firebase login`, rode `npm install` dentro de `functions/` e, na raiz, publique com `firebase deploy --only firestore:rules,functions --project orbe-5fa05`.

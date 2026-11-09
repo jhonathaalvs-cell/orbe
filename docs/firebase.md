@@ -4,7 +4,7 @@ O cliente inicializa Firebase App, Authentication e Cloud Firestore com módulos
 
 ## Configuração local
 
-Os valores do app web ficam em `src/services/firebase/firebase-config.local.js`, ignorado pelo Git. O arquivo `firebase-config.local.example.js` documenta os campos esperados. O ID e a API key web identificam o projeto no cliente; não concedem acesso ao Firestore sem usuário autenticado e regras de segurança.
+Os valores públicos do app web ficam em `src/services/firebase/firebase-config.js`, incluído no repositório para permitir a execução no GitHub Pages. O arquivo `firebase-config.local.example.js` documenta os campos esperados. O ID e a API key web identificam o projeto no cliente; não concedem acesso ao Firestore sem usuário autenticado e regras de segurança.
 
 ## Autenticação e dados
 

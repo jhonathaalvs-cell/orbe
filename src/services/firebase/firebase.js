@@ -25,12 +25,7 @@ import {
   writeBatch,
 } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 
-let firebaseConfig;
-try {
-  ({ firebaseConfig } = await import("./firebase-config.local.js"));
-} catch {
-  firebaseConfig = null;
-}
+import { firebaseConfig } from "./firebase-config.js";
 
 const isConfigured = Boolean(firebaseConfig?.apiKey && firebaseConfig?.projectId && firebaseConfig?.appId);
 const app = isConfigured ? initializeApp(firebaseConfig) : null;

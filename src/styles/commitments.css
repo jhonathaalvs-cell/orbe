@@ -15,7 +15,7 @@
 .status-filter { display: flex; align-items: center; gap: 8px; color: #7d8980; font-size: 10px; }
 .status-filter select { min-height: 35px; padding: 0 28px 0 10px; border: 1px solid #e2e9e3; border-radius: 9px; background: #fff; color: #3e5043; font: inherit; }
 .occurrence-list { display: grid; gap: 8px; }
-.occurrence-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 13px; padding: 12px; border: 1px solid #edf1ed; border-radius: 13px; background: #fff; }
+.occurrence-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto max-content; align-items: center; gap: 10px; min-width: 0; box-sizing: border-box; padding: 12px; border: 1px solid #edf1ed; border-radius: 13px; background: #fff; }
 .occurrence-date { display: grid; width: 44px; height: 48px; align-content: center; justify-items: center; border-radius: 11px; background: #f2f7f3; color: #2f6442; }
 .occurrence-date b { font: 700 17px Manrope, sans-serif; line-height: 1; }
 .occurrence-date small { margin-top: 4px; font-size: 8px; text-transform: uppercase; }
@@ -25,7 +25,7 @@
 .occurrence-amount { display: grid; gap: 4px; justify-items: end; white-space: nowrap; }
 .occurrence-amount strong { color: #36483b; font-size: 12px; }
 .occurrence-amount small { color: #89958c; font-size: 9px; }
-.occurrence-actions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.occurrence-actions { display: flex; grid-column: 5; align-items: center; justify-content: flex-end; gap: 7px; }
 .occurrence-actions button { min-height: 32px; padding: 0 10px; border: 1px solid #e0e9e2; border-radius: 9px; background: #fff; color: #52715c; font: inherit; font-size: 9px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .occurrence-actions .confirm-occurrence { border-color: #208052; background: #208052; color: #fff; }
 .occurrence-actions .confirm-occurrence:hover { background: #176b42; }
@@ -54,7 +54,12 @@
 .month-step:disabled { opacity: .4; cursor: not-allowed; }
 .editor-note-edit { color: #65756a; }
 .payment-context { margin: -4px 0 16px; color: #758279; font-size: 12px; }
-@media (max-width: 900px) { .occurrence-row { grid-template-columns: 48px minmax(0, 1fr) auto; } .occurrence-status { grid-column: 2; justify-self: start; } .occurrence-actions { grid-column: 3; grid-row: 1 / span 2; flex-direction: column; } }
+@media (max-width: 900px) {
+  .occurrence-row { grid-template-columns: 42px minmax(0, 1fr) auto auto max-content; gap: 8px; padding: 10px; }
+  .occurrence-date { width: 40px; }
+  .occurrence-status { grid-column: 4; justify-self: end; }
+  .occurrence-actions { grid-column: 5; flex-direction: column; }
+}
 @media (max-width: 650px) {
   .commitments-page .page-heading { align-items: flex-start; }
   .commitment-metrics { grid-template-columns: 1fr; gap: 8px; }
@@ -64,11 +69,12 @@
   .checklist-panel { padding: 14px 11px; }
   .checklist-panel > .panel-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
   .occurrence-row { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 8px; padding: 9px; }
-  .occurrence-date { width: 40px; height: 44px; }
-  .occurrence-amount { grid-column: 2; justify-items: start; }
-  .occurrence-actions { grid-column: 3; grid-row: 1 / span 3; }
+  .occurrence-date { grid-column: 1; grid-row: 1; width: 40px; height: 44px; }
+  .occurrence-details { grid-column: 2; grid-row: 1; }
+  .occurrence-amount { grid-column: 2; grid-row: 2; justify-items: start; }
+  .occurrence-actions { grid-column: 3; grid-row: 1 / span 3; flex-direction: column; }
   .occurrence-actions button { padding: 0 7px; }
-  .occurrence-status { grid-column: 2; }
+  .occurrence-status { grid-column: 2; grid-row: 3; justify-self: start; }
   .recurrence-grid { grid-template-columns: 1fr; }
   .recurrence-card { grid-template-columns: 1fr; }
   .recurrence-actions { justify-content: flex-start; }
