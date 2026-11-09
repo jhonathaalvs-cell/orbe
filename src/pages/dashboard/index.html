@@ -32,8 +32,7 @@
                 <a class="nav-link active" href="#inicio" data-page="inicio"><span>⌂</span> Visão geral</a>
                 <a class="nav-link" href="#movimentacoes" data-page="movimentacoes"><span>↕</span> Movimentações</a>
                 <a class="nav-link" href="#contas" data-page="contas"><span>▣</span> Contas e carteiras</a>
-                <a class="nav-link" href="#compromissos" data-page="compromissos"><span>◷</span> Compromissos
-                    <i>3</i></a>
+                <a class="nav-link" href="#compromissos" data-page="compromissos"><span>◷</span> Compromissos</a>
                 <a class="nav-link" href="#cartoes" data-page="cartoes"><span>▤</span> Cartões</a>
                 <a class="nav-link" href="#dividas" data-page="dividas"><span>⌁</span> Empréstimos e dívidas</a>
                 <a class="nav-link" href="#metas" data-page="metas"><span>◎</span> Metas</a>
@@ -81,7 +80,7 @@
                             <span>⌄</span></button><button class="button button-primary"
                             id="addTransaction"><span>＋</span> Nova movimentação</button></div>
                 </section>
-                <div class="demo-notice"><span>&#9432;</span> Resumo, movimentações e compromissos refletem seus dados no Firebase. O módulo de metas ainda é demonstrativo.</div>
+                <div class="demo-notice"><span>&#9432;</span> Resumo, movimentações e compromissos refletem seus dados no Firebase. Metas e depósitos também são salvos na sua conta.</div>
                 <section class="summary-grid" aria-label="Resumo financeiro">
                     <article class="summary-card balance-card">
                         <div class="card-top"><span>Saldo registrado</span><span class="card-symbol">◉</span></div>
@@ -164,21 +163,7 @@
                                 <p>Um passo de cada vez</p>
                             </div><a class="text-link" href="#metas" data-page="metas">Ver todas <b>→</b></a>
                         </div>
-                        <div class="goal-main">
-                            <div class="goal-icon beach">✳</div>
-                            <div class="goal-details"><b>Viagem de férias</b><span>R$ 3.200 <small>de R$
-                                        8.000</small></span>
-                                <div class="progress-track"><i style="width:40%"></i></div><small>40% concluído</small>
-                            </div>
-                        </div>
-                        <div class="goal-main second-goal">
-                            <div class="goal-icon home">⌂</div>
-                            <div class="goal-details"><b>Reserva de emergência</b><span>R$ 6.750 <small>de R$
-                                        15.000</small></span>
-                                <div class="progress-track purple"><i style="width:45%"></i></div><small>45%
-                                    concluído</small>
-                            </div>
-                        </div><button class="goal-add" id="addGoal">＋ Criar nova meta</button>
+                        <div id="dashboardGoals" aria-live="polite"><p class="goal-preview-empty">Carregando suas metas...</p></div><button class="goal-add" id="addGoal">+ Criar nova meta</button>
                     </article>
                 </section>
                 <section class="dashboard-grid lower-grid">

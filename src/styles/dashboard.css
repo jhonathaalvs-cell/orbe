@@ -355,6 +355,27 @@
     padding-left: 4px
 }
 
+/* Solid, clearly differentiated summary cards. */
+.summary-card.income-summary { background: #188454; border-color: #188454; color: #fff; }
+.summary-card.expense-summary { background: #c75b45; border-color: #c75b45; color: #fff; }
+.summary-card.pending-summary { background: #d18a2d; border-color: #d18a2d; color: #fff; }
+.income-summary .card-top, .expense-summary .card-top, .pending-summary .card-top,
+.income-summary .amount, .expense-summary .amount, .pending-summary .amount,
+.income-summary .card-foot, .expense-summary .card-foot, .pending-summary .card-foot { color: #fff; }
+.summary-card.income-summary .soft-icon, .summary-card.expense-summary .soft-icon,
+.summary-card.pending-summary .soft-icon { color: #fff; background: #ffffff29; }
+.balance-spark, .mini-bars, .due-dots { display: none; }
+#periodButton, #chartPeriod { font: inherit; cursor: pointer; }
+#periodButton { border: 1px solid #e7ece8; border-radius: 7px; background: #fff; color: #526158; padding: 8px 11px; font-size: 11px; }
+#chartPeriod { border: 1px solid #e9ede9; border-radius: 6px; background: #fff; color: #526158; padding: 7px 9px; font-size: 10px; }
+.month-bars { position: relative; border: 0; padding: 0; background: transparent; cursor: pointer; justify-content: center; }
+.month-bars:focus-visible { outline: 2px solid #27845a; outline-offset: 3px; }
+.month-bars.selected::after { content: ''; position: absolute; bottom: -4px; width: 4px; height: 4px; border-radius: 50%; background: #27845a; }
+.chart-columns { justify-content: space-between; }
+.chart-twelve-months .month-bars { width: 22px; gap: 3px; }
+.chart-twelve-months .month-bars i { width: 8px; }
+.chart-twelve-months .x-labels { font-size: 7px; }
+
 .goals-panel {
     padding-bottom: 12px
 }

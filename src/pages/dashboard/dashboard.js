@@ -6,6 +6,7 @@ import {
   getCommitments,
   getNotifications,
   getAccounts,
+  getGoals,
   getTransfers,
   getTransactions,
   getUserProfile,
@@ -77,6 +78,8 @@ async function loadDashboard(user) {
     document.querySelector('#profileName').textContent = profile.name;
     document.querySelector('#greeting').firstChild.textContent = `Olá, ${profile.name} `;
     const occurrences = await getCommitmentOccurrences(user.uid, commitments);
+    let goals = [];
+    try { goals = await getGoals(user.uid); } catch { /* Visão geral permanece disponível se as regras de metas ainda não foram publicadas. */ }
     if (activeUser?.uid !== user.uid) return;
     currentTransactions = transactions;
     currentCommitments = commitments;
@@ -87,11 +90,28 @@ async function loadDashboard(user) {
     renderTransactionAccountOptions(accounts);
     renderFinanceSummary(transactions, occurrences, accounts);
     renderCommitments(occurrences);
+    renderGoalPreview(goals);
     refreshNotificationIndicator(user);
   } catch (error) {
     rows.innerHTML = '<tr><td colspan="4" class="empty-transactions">Não foi possível carregar seus dados financeiros.</td></tr>';
     showToast(firebaseErrorMessage(error));
   }
+}
+
+function renderGoalPreview(goals) {
+  const preview = document.querySelector('#dashboardGoals');
+  if (!preview) return;
+  const active = goals.filter(goal => goal.active !== false).slice(0, 2);
+  if (!active.length) {
+    preview.innerHTML = '<p class="goal-preview-empty">Crie sua primeira meta e acompanhe o progresso por aqui.</p>';
+    return;
+  }
+  preview.innerHTML = active.map((goal, index) => {
+    const saved = (goal.deposits || []).reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const target = Number(goal.targetAmount || 0);
+    const progress = target ? Math.min(100, saved / target * 100) : 0;
+    return `<div class="goal-main ${index ? 'second-goal' : ''}"><div class="goal-icon ${index ? 'home' : 'beach'}">◎</div><div class="goal-details"><b>${escapeHtml(goal.name)}</b><span>${money.format(saved)} <small>de ${money.format(target)}</small></span><div class="progress-track ${index ? 'purple' : ''}"><i style="width:${progress}%"></i></div><small>${progress.toFixed(0)}% concluído</small></div></div>`;
+  }).join('');
 }
 
 function renderTransactionAccountOptions(accounts) {
@@ -139,12 +159,56 @@ function renderTransactions(transactions) {
     }).join('');
 }
 
+function monthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthName(key, options = { month: 'long', year: 'numeric' }) {
+  return new Date(`${key}-01T12:00:00`).toLocaleDateString('pt-BR', options);
+}
+
+function setupSummaryControls(now) {
+  const period = document.querySelector('#periodButton');
+  if (period.tagName !== 'SELECT') {
+    const select = document.createElement('select');
+    select.id = period.id;
+    select.className = period.className;
+    select.setAttribute('aria-label', 'Período do resumo');
+    for (let offset = 0; offset < 12; offset++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      const option = document.createElement('option');
+      option.value = monthKey(date);
+      option.textContent = offset === 0 ? 'Este mês' : monthName(option.value);
+      select.append(option);
+    }
+    period.replaceWith(select);
+    select.addEventListener('change', () => renderFinanceSummary(currentTransactions, currentOccurrences, currentAccounts));
+  }
+  const range = document.querySelector('#chartPeriod');
+  if (range.tagName !== 'SELECT') {
+    const select = document.createElement('select');
+    select.id = range.id;
+    select.className = range.className;
+    select.setAttribute('aria-label', 'Período do gráfico');
+    select.innerHTML = '<option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option>';
+    range.replaceWith(select);
+    select.addEventListener('change', () => renderCashflowChart(currentTransactions, Number(select.value)));
+  }
+  document.querySelectorAll('.summary-card').forEach((card, index) => {
+    card.classList.toggle('income-summary', index === 1);
+    card.classList.toggle('expense-summary', index === 2);
+    card.classList.toggle('pending-summary', index === 3);
+    card.querySelector('.balance-spark, .mini-bars, .due-dots')?.remove();
+  });
+}
+
 function renderFinanceSummary(transactions, occurrences, accounts = []) {
   const [year, month, day] = todayKey().split('-').map(Number);
   const now = new Date(year, month - 1, day, 12);
   document.querySelector('.page-heading .eyebrow').innerHTML = `<span class="live-dot"></span> ${now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).toLocaleUpperCase('pt-BR')}`;
-  const monthKey = todayKey().slice(0, 7);
-  const monthTransactions = transactions.filter(item => item.date.startsWith(monthKey));
+  setupSummaryControls(now);
+  const selectedMonth = document.querySelector('#periodButton').value || todayKey().slice(0, 7);
+  const monthTransactions = transactions.filter(item => item.date?.startsWith(selectedMonth));
   const sum = (items, type) => items.filter(item => item.type === type).reduce((total, item) => total + item.amount, 0);
   const income = sum(monthTransactions, 'income');
   const expenses = sum(monthTransactions, 'expense');
@@ -152,54 +216,63 @@ function renderFinanceSummary(transactions, occurrences, accounts = []) {
   const accountBalance = accounts.reduce((total, account) => {
     const since = account.openingDate || '0000-00-00';
     const movementTotal = transactions.filter(item => item.accountId === account.id && item.date >= since)
-      .reduce((sum, item) => sum + (item.type === 'income' ? item.amount : -item.amount), 0);
+      .reduce((value, item) => value + (item.type === 'income' ? item.amount : -item.amount), 0);
     const transferTotal = currentTransfers.filter(item => item.date >= since)
-      .reduce((sum, item) => sum + (item.toAccountId === account.id ? item.amount : item.fromAccountId === account.id ? -item.amount : 0), 0);
+      .reduce((value, item) => value + (item.toAccountId === account.id ? item.amount : item.fromAccountId === account.id ? -item.amount : 0), 0);
     return total + (account.openingBalance || 0) + movementTotal + transferTotal;
   }, 0);
-  const allTimeBalance = accountBalance + unassignedBalance;
-  const pending = occurrences.filter(item => item.status === 'pending');
+  const pending = occurrences.filter(item => item.status === 'pending' && item.dueDate?.startsWith(selectedMonth));
   const cards = document.querySelectorAll('.summary-card');
-  cards[0].querySelector('.amount').textContent = money.format(allTimeBalance);
-  cards[0].querySelector('.card-foot').innerHTML = '<span>saldo registrado</span><span>das contas e movimentações</span>';
+  cards[0].querySelector('.amount').textContent = money.format(accountBalance + unassignedBalance);
+  cards[0].querySelector('.card-foot').innerHTML = '<span>saldo atual das contas e movimentações</span>';
   cards[1].querySelector('.amount').textContent = money.format(income);
   cards[2].querySelector('.amount').textContent = money.format(expenses);
   cards[3].querySelector('.amount').textContent = money.format(pending.reduce((total, item) => total + item.amount, 0));
-  cards[1].querySelector('.card-foot').innerHTML = '<span>registros deste mês</span>';
-  cards[2].querySelector('.card-foot').innerHTML = '<span>registros deste mês</span>';
-  cards[3].querySelector('.card-foot').innerHTML = `<span class="pending-tag">${pending.length} pendente${pending.length === 1 ? '' : 's'}</span><span>sem baixa automática</span>`;
+  cards[1].querySelector('.card-top span').textContent = `Receitas de ${monthName(selectedMonth)}`;
+  cards[2].querySelector('.card-top span').textContent = `Despesas de ${monthName(selectedMonth)}`;
+  cards[3].querySelector('.card-top span').textContent = `Pendências de ${monthName(selectedMonth)}`;
+  cards[1].querySelector('.card-foot').innerHTML = `<span>${monthTransactions.filter(item => item.type === 'income').length} lançamento(s) confirmado(s)</span>`;
+  cards[2].querySelector('.card-foot').innerHTML = `<span>${monthTransactions.filter(item => item.type === 'expense').length} lançamento(s) confirmado(s)</span>`;
   const nextPending = pending.filter(item => item.dueDate >= todayKey()).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
-  const nextDueText = document.querySelector('.due-dots span');
-  if (nextDueText) nextDueText.textContent = nextPending ? `Próximo vencimento: ${new Date(`${nextPending.dueDate}T12:00:00`).toLocaleDateString('pt-BR')}` : 'Nenhum próximo vencimento';
+  cards[3].querySelector('.card-foot').innerHTML = `<span>${pending.length} compromisso(s) em aberto${nextPending ? ` · próximo ${new Date(`${nextPending.dueDate}T12:00:00`).toLocaleDateString('pt-BR')}` : ''}</span>`;
+  renderCashflowChart(transactions, Number(document.querySelector('#chartPeriod').value || 6));
+  const notice = document.querySelector('.demo-notice');
+  notice.innerHTML = '<span>&#9432;</span> Saldo e movimentações usam seus registros. A automação dos próximos vencimentos depende de publicar a Cloud Function.';
+}
 
-  const months = Array.from({ length: 6 }, (_, index) => new Date(now.getFullYear(), now.getMonth() - 5 + index, 1));
+function renderCashflowChart(transactions, range = 6) {
+  const today = todayKey().slice(0, 7);
+  const end = new Date(`${today}-01T12:00:00`);
+  const months = Array.from({ length: range }, (_, index) => new Date(end.getFullYear(), end.getMonth() - range + 1 + index, 1));
   const totals = months.map(date => {
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-    const records = transactions.filter(item => item.date.startsWith(key));
-    return { income: sum(records, 'income'), expense: sum(records, 'expense') };
+    const key = monthKey(date);
+    const records = transactions.filter(item => item.date?.startsWith(key));
+    return { key, date, income: records.filter(item => item.type === 'income').reduce((value, item) => value + item.amount, 0), expense: records.filter(item => item.type === 'expense').reduce((value, item) => value + item.amount, 0) };
   });
   const maxValue = Math.max(1, ...totals.flatMap(item => [item.income, item.expense]));
-  document.querySelectorAll('.month-bars').forEach((group, index) => {
-    group.querySelector('.income').style.height = `${Math.max(3, totals[index].income / maxValue * 100)}%`;
-    group.querySelector('.expense').style.height = `${Math.max(3, totals[index].expense / maxValue * 100)}%`;
-  });
-  document.querySelectorAll('.x-labels span').forEach((label, index) => {
-    label.textContent = months[index].toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-  });
-  const monthBalance = income - expenses;
-  const chartBalance = document.querySelector('.chart-legend strong b');
-  if (chartBalance) chartBalance.textContent = money.format(monthBalance);
-  const chartTitle = document.querySelector('.chart-legend strong');
-  if (chartTitle?.firstChild) chartTitle.firstChild.textContent = 'Resultado do mês ';
-  const axisTop = Math.ceil(maxValue / 3 / 1000) * 3000 || 3000;
+  const chart = document.querySelector('.chart');
+  const columns = chart.querySelector('.chart-columns');
+  const labels = chart.querySelector('.x-labels');
+  columns.innerHTML = totals.map(item => `<button type="button" class="month-bars" aria-label="${monthName(item.key)}: receitas ${money.format(item.income)}, despesas ${money.format(item.expense)}" data-month="${item.key}"><i class="income" style="height:${item.income ? item.income / maxValue * 100 : 0}%"></i><i class="expense" style="height:${item.expense ? item.expense / maxValue * 100 : 0}%"></i></button>`).join('');
+  labels.innerHTML = totals.map(item => `<span>${item.date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span>`).join('');
+  chart.classList.toggle('chart-twelve-months', range === 12);
+  chart.setAttribute('aria-label', `Gráfico de receitas e despesas dos últimos ${range} meses`);
+  chart.removeAttribute('role');
+  const rawStep = maxValue / 3;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+  const axisTop = Math.ceil(rawStep / magnitude) * magnitude * 3;
   document.querySelectorAll('.y-labels span').forEach((label, index) => {
     const value = axisTop * (3 - index) / 3;
     label.textContent = value === 0 ? '0' : new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 0 }).format(value);
   });
-  const notice = document.querySelector('.demo-notice');
-  notice.innerHTML = '<span>&#9432;</span> Saldo e movimentações usam seus registros. A automação dos próximos vencimentos depende de publicar a Cloud Function. Metas ainda são demonstrativas.';
+  const showMonth = item => {
+    columns.querySelectorAll('.month-bars').forEach(bar => bar.classList.toggle('selected', bar.dataset.month === item.key));
+    document.querySelector('.chart-legend strong').innerHTML = `Resultado de ${monthName(item.key, { month: 'short', year: 'numeric' })}<b>${money.format(item.income - item.expense)}</b>`;
+    document.querySelector('.chart-caption span').textContent = `${monthName(item.key)} · Receitas ${money.format(item.income)} · Despesas ${money.format(item.expense)}`;
+  };
+  columns.querySelectorAll('.month-bars').forEach((bar, index) => bar.addEventListener('click', () => showMonth(totals[index])));
+  showMonth(totals[totals.length - 1]);
 }
-
 function renderCommitments(occurrences) {
   const list = document.querySelector('#commitmentList');
   const today = todayKey();
@@ -368,9 +441,7 @@ document.querySelector('.notification-button').addEventListener('click', async (
   }
 });
 
-document.querySelector('#addGoal').addEventListener('click', () => showToast('O cadastro de metas será desenvolvido na próxima etapa.'));
-document.querySelector('#periodButton').addEventListener('click', () => showToast('O filtro de períodos será implementado com os relatórios.'));
-document.querySelector('#chartPeriod').addEventListener('click', () => showToast('O gráfico mostra suas receitas e despesas dos últimos seis meses.'));
+document.querySelector('#addGoal').addEventListener('click', () => window.dispatchEvent(new CustomEvent('orbe:navigate', { detail: { page: 'metas' } })));
 const sidebar = document.querySelector('#sidebar');
 const sidebarExpand = document.querySelector('#sidebarExpand');
 sidebarExpand.addEventListener('click', () => {

@@ -219,6 +219,52 @@ service cloud.firestore {
           && request.resource.data.read is bool;
         allow create, delete: if false;
       }
+
+      match /goals/{goalId} {
+        function validGoal(data) {
+          return data.keys().hasAll(['name', 'targetAmount', 'monthlyContribution', 'targetDate', 'createdDate', 'targetHistory', 'active', 'createdAt', 'updatedAt'])
+            && data.keys().hasOnly(['name', 'targetAmount', 'monthlyContribution', 'targetDate', 'createdDate', 'targetHistory', 'active', 'createdAt', 'updatedAt', 'updatedDate'])
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 80
+            && data.targetAmount is number && data.targetAmount > 0 && data.targetAmount <= 1000000000
+            && (data.monthlyContribution == null || (data.monthlyContribution is number && data.monthlyContribution > 0 && data.monthlyContribution <= 1000000000))
+            && (data.targetDate == null || (data.targetDate is string && data.targetDate.matches('^\\d{4}-\\d{2}-\\d{2}$')))
+            && data.createdDate is string && data.createdDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && data.targetHistory is list && data.targetHistory.size() > 0 && data.targetHistory.size() <= 100
+            && data.active is bool;
+        }
+        allow get, list: if ownsUser(userId);
+        allow create: if ownsUser(userId) && validGoal(request.resource.data)
+          && request.resource.data.active == true
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if ownsUser(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'targetAmount', 'monthlyContribution', 'targetDate', 'targetHistory', 'updatedDate', 'updatedAt'])
+          && validGoal(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.createdDate == resource.data.createdDate
+          && request.resource.data.active == resource.data.active
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if ownsUser(userId);
+
+        match /deposits/{depositId} {
+          allow get, list: if ownsUser(userId)
+            && exists(/databases/$(database)/documents/users/$(userId)/goals/$(goalId));
+          allow create: if ownsUser(userId)
+            && exists(/databases/$(database)/documents/users/$(userId)/goals/$(goalId))
+            && request.resource.data.keys().hasAll(['amount', 'date', 'createdAt'])
+            && request.resource.data.keys().hasOnly(['amount', 'date', 'note', 'createdAt'])
+            && request.resource.data.amount is number
+            && request.resource.data.amount > 0
+            && request.resource.data.amount <= 1000000000
+            && request.resource.data.date is string
+            && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && (!request.resource.data.keys().hasAny(['note']) || (request.resource.data.note is string && request.resource.data.note.size() <= 120))
+            && request.resource.data.createdAt == request.time;
+          allow update: if false;
+          allow delete: if ownsUser(userId)
+            && exists(/databases/$(database)/documents/users/$(userId)/goals/$(goalId));
+        }
+      }
     }
 
     match /{document=**} {

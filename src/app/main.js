@@ -9,6 +9,7 @@ const pageStyles = {
   profile: ["layout.css", "components.css", "responsive.css", "profile.css", "sidebar-nav.css", "mobile-nav.css"],
   accounts: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "accounts.css"],
   commitments: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "commitments.css"],
+  goals: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "goals.css"],
 };
 const pageStyleLoads = new WeakMap();
 
@@ -189,6 +190,30 @@ async function showCommitments(user) {
   }
 }
 
+async function showGoals(user) {
+  if (!user) return showLogin();
+  const version = ++renderVersion;
+  appRoot.setAttribute("aria-busy", "true");
+  try {
+    if (!await loadPageStyles("goals", version)) return;
+    const response = await fetch("src/pages/metas/index.html");
+    if (!response.ok) throw new Error("NÃ£o foi possÃ­vel carregar suas metas.");
+    const content = appRoot.querySelector(".content");
+    if (!content) return showDashboard(user);
+    content.innerHTML = await response.text();
+    document.querySelector("#pageTitle").textContent = "Metas";
+    const { mountGoalsPage } = await import("../pages/metas/goals.js");
+    if (version === renderVersion) mountGoalsPage(user);
+  } catch (error) {
+    if (version === renderVersion) {
+      const content = appRoot.querySelector(".content");
+      if (content) content.innerHTML = `<section class="page-load-error"><h1>NÃ£o foi possÃ­vel abrir suas metas</h1><p>${error.message}</p></section>`;
+    }
+  } finally {
+    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
+  }
+}
+
 appRoot.addEventListener("click", (event) => {
   const link = event.target.closest("[data-page]");
   if (!link) return;
@@ -213,6 +238,7 @@ appRoot.addEventListener("click", (event) => {
   if (page === "perfil") return showProfile(currentUser);
   if (page === "contas") return showAccounts(currentUser);
   if (page === "compromissos") return showCommitments(currentUser);
+  if (page === "metas") return showGoals(currentUser);
   if (page === "inicio") return showDashboard(currentUser);
   if (page === "movimentacoes") {
     const selector = ".transactions-panel";
@@ -232,6 +258,7 @@ window.addEventListener("orbe:navigate", (event) => {
   if (event.detail?.page === "inicio") showDashboard(currentUser);
   if (event.detail?.page === "perfil") showProfile(currentUser);
   if (event.detail?.page === "compromissos") showCommitments(currentUser);
+  if (event.detail?.page === "metas") showGoals(currentUser);
 });
 
 if (firebaseReady) {
