@@ -1,0 +1,53 @@
+<section class="profile-page">
+  <section class="page-heading">
+    <div>
+      <div class="eyebrow"><span class="live-dot"></span> SUA CONTA</div>
+      <h1>Meu perfil</h1>
+      <p>Gerencie seus dados, preferências e segurança.</p>
+    </div>
+    <button class="button button-quiet" type="button" id="profileBack">← Voltar ao painel</button>
+  </section>
+
+  <div class="profile-layout">
+    <article class="panel profile-card">
+      <div class="profile-section-heading">
+        <div class="profile-section-icon" aria-hidden="true">◉</div>
+        <div><h2>Dados pessoais</h2><p>Informações básicas da sua conta Orbe.</p></div>
+      </div>
+      <form id="profileForm">
+        <label for="profileFullName">Nome completo<input id="profileFullName" name="name" required minlength="2" maxlength="80" autocomplete="name" /></label>
+        <label for="profileEmail">E-mail<input id="profileEmail" name="email" type="email" readonly aria-describedby="emailHelp" /></label>
+        <small class="field-help" id="emailHelp">Para alterar o e-mail, será necessário confirmar a mudança pelo Firebase.</small>
+        <label for="profileCreatedAt">Membro desde<input id="profileCreatedAt" name="createdAt" readonly /></label>
+      </form>
+    </article>
+
+    <article class="panel profile-card">
+      <div class="profile-section-heading">
+        <div class="profile-section-icon preference-icon" aria-hidden="true">⚙</div>
+        <div><h2>Preferências</h2><p>Defina como os dados financeiros serão apresentados.</p></div>
+      </div>
+      <div class="profile-form-grid">
+        <label for="profileCurrency">Moeda principal<select id="profileCurrency" name="currency" form="profileForm"><option value="BRL">Real brasileiro (BRL)</option><option value="USD" disabled>Dólar americano (USD) — em breve</option><option value="EUR" disabled>Euro (EUR) — em breve</option></select><small class="field-help">Movimentações atuais são registradas em BRL. Outras moedas exigem conversão do histórico.</small></label>
+        <label for="profileTimeZone">Fuso horário<select id="profileTimeZone" name="timeZone" form="profileForm"><option value="America/Sao_Paulo">Brasília (São Paulo)</option><option value="America/Manaus">Manaus</option><option value="America/Belem">Belém</option><option value="America/Noronha">Fernando de Noronha</option><option value="UTC">UTC</option></select></label>
+      </div>
+      <div class="profile-section-heading notification-heading">
+        <div class="profile-section-icon notification-icon" aria-hidden="true">◷</div>
+        <div><h2>Lembretes internos</h2><p>As contas continuam pendentes até você confirmar o pagamento.</p></div>
+      </div>
+      <label class="preference-toggle"><span><b>Vencimentos próximos</b><small>Receber lembrete no dia anterior ou no vencimento.</small></span><input id="commitmentDue" name="commitmentDue" type="checkbox" form="profileForm" /></label>
+      <label class="preference-toggle"><span><b>Contas em atraso</b><small>Receber aviso de vencimentos ainda não confirmados.</small></span><input id="commitmentOverdue" name="commitmentOverdue" type="checkbox" form="profileForm" /></label>
+    </article>
+
+    <article class="panel profile-card security-card">
+      <div class="profile-section-heading">
+        <div class="profile-section-icon security-icon" aria-hidden="true">⌑</div>
+        <div><h2>Segurança</h2><p>Proteja o acesso à sua conta.</p></div>
+      </div>
+      <div class="security-action"><div><b>Senha</b><small>Enviaremos um link de redefinição para o e-mail cadastrado.</small></div><button class="button button-quiet" id="resetPassword" type="button">Redefinir senha</button></div>
+      <p class="profile-feedback" id="profileFeedback" role="status" aria-live="polite" hidden></p>
+    </article>
+  </div>
+
+  <div class="profile-save-row"><p>As alterações de nome, moeda, fuso e lembretes serão salvas na sua conta.</p><button class="button button-primary" type="submit" form="profileForm" id="saveProfile">Salvar alterações</button></div>
+</section>

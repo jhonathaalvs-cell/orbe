@@ -1,0 +1,1091 @@
+# PROJETO — PLATAFORMA DE GESTÃO FINANCEIRA PESSOAL E FAMILIAR
+**Documento de planejamento, especificação funcional e roteiro de desenvolvimento**
+
+**Versão:** 1.0
+**Status:** Planejamento inicial
+**Modelo:** Aplicação web responsiva e PWA
+**Banco de dados:** Firebase / Cloud Firestore
+**Objetivo:** Desenvolver uma plataforma completa de organização, controle e acompanhamento financeiro individual e familiar.
+
+---
+
+# 1. APRESENTAÇÃO DO PROJETO
+
+## 1.1. Descrição
+O projeto consiste no desenvolvimento de uma plataforma de gestão financeira inteligente, destinada a pessoas que desejam organizar suas finanças individuais e familiares.
+
+A plataforma permitirá registrar receitas, despesas, contas, compromissos recorrentes, cartões, empréstimos, financiamentos, parcelamentos e metas financeiras.
+
+Além do registro das movimentações, o sistema terá mecanismos de acompanhamento, notificações, avaliações periódicas e análises do comportamento financeiro dos usuários.
+
+O objetivo não é apenas armazenar informações financeiras, mas ajudar os usuários a compreender sua situação financeira, acompanhar seus compromissos e planejar melhor seus recursos.
+
+## 1.2. Objetivos
+
+- Facilitar a organização financeira pessoal.
+- Permitir o gerenciamento financeiro compartilhado entre familiares.
+- Acompanhar receitas e despesas.
+- Organizar contas e pagamentos recorrentes.
+- Controlar empréstimos, financiamentos e parcelamentos.
+- Administrar cartões de crédito.
+- Criar e acompanhar metas financeiras.
+- Automatizar lembretes e notificações.
+- Gerar avaliações financeiras mensais.
+- Comparar o planejamento com os registros realizados.
+- Apresentar previsões e análises baseadas no histórico financeiro.
+
+## 1.3. Público-alvo
+
+- Pessoas que desejam controlar suas finanças.
+- Casais que compartilham despesas.
+- Famílias que precisam organizar o orçamento doméstico.
+- Pessoas com empréstimos e financiamentos.
+- Usuários que desejam criar reservas financeiras.
+- Pessoas que buscam acompanhamento e planejamento financeiro.
+
+## 1.4. Proposta de valor
+A plataforma deverá funcionar como um assistente de organização financeira, acompanhando os compromissos cadastrados e ajudando o usuário a entender sua evolução financeira.
+
+Um dos principais diferenciais será a integração entre finanças pessoais, familiares, metas, compromissos e avaliações periódicas.
+
+---
+
+# 2. ESTRUTURA GERAL DA PLATAFORMA
+A plataforma será dividida nos seguintes módulos:
+
+1. Dashboard principal.
+2. Gestão financeira pessoal.
+3. Gestão financeira familiar.
+4. Receitas e despesas.
+5. Contas e carteiras.
+6. Compromissos financeiros.
+7. Empréstimos e financiamentos.
+8. Cartões de crédito.
+9. Parcelamentos.
+10. Metas e cofres.
+11. Calendário financeiro.
+12. Notificações e lembretes.
+13. Central de avaliações.
+14. Relatórios e análises.
+15. Configurações e administração da conta.
+Os módulos deverão funcionar de forma integrada, compartilhando informações quando necessário, sem duplicar movimentações financeiras.
+
+---
+
+# 3. USUÁRIOS, CONTAS E FAMÍLIAS
+
+## 3.1. Cadastro de usuários
+Cada usuário deverá possuir:
+
+- Nome completo.
+- E-mail.
+- Senha.
+- Foto de perfil opcional.
+- Data de cadastro.
+- Preferências de utilização.
+- Configurações de notificações.
+- Fuso horário.
+- Moeda principal.
+O sistema utilizará autenticação segura.
+
+## 3.2. Ambiente pessoal
+Cada usuário terá um ambiente financeiro individual.
+
+Nesse ambiente poderá administrar:
+
+- Receitas próprias.
+- Despesas pessoais.
+- Contas e carteiras.
+- Cartões próprios.
+- Dívidas individuais.
+- Metas particulares.
+- Histórico financeiro.
+
+## 3.3. Ambiente familiar
+O usuário poderá criar uma família e convidar outras pessoas.
+
+Funcionalidades:
+
+- Criar grupo familiar.
+- Convidar integrantes.
+- Aceitar ou recusar convites.
+- Remover integrantes.
+- Definir responsáveis.
+- Configurar permissões.
+- Registrar receitas compartilhadas.
+- Registrar despesas domésticas.
+- Criar metas coletivas.
+- Acompanhar resultados familiares.
+
+## 3.4. Permissões
+O sistema deverá trabalhar com diferentes níveis de acesso:
+
+**Administrador familiar**
+
+- Gerencia o grupo.
+- Convida integrantes.
+- Configura permissões.
+- Administra os compromissos compartilhados.
+**Integrante**
+
+- Visualiza informações às quais possui acesso.
+- Registra movimentações.
+- Participa de metas compartilhadas.
+- Confirma pagamentos de sua responsabilidade.
+**Responsável financeiro**
+
+- Pode receber permissões adicionais para administrar determinadas despesas e compromissos.
+As permissões deverão ser configuráveis.
+
+Informações pessoais não serão compartilhadas automaticamente apenas porque duas pessoas pertencem à mesma família.
+
+---
+
+# 4. DASHBOARD PRINCIPAL
+O dashboard será a página inicial após o login.
+
+## 4.1. Informações principais
+
+- Saldo registrado.
+- Receitas do período.
+- Despesas do período.
+- Saldo calculado.
+- Contas pendentes.
+- Próximos vencimentos.
+- Dívidas cadastradas.
+- Progresso das metas.
+- Resumo dos cartões.
+- Notificações recentes.
+
+## 4.2. Filtros
+O usuário poderá selecionar:
+
+- Hoje.
+- Esta semana.
+- Este mês.
+- Mês anterior.
+- Este ano.
+- Período personalizado.
+
+## 4.3. Visualizações
+O dashboard deverá conter:
+
+- Gráfico de receitas e despesas.
+- Gráfico de distribuição de gastos.
+- Evolução financeira.
+- Comparação mensal.
+- Próximos compromissos.
+- Resumo das metas.
+- Alertas importantes.
+Deverá existir uma alternância entre visão pessoal e visão familiar, quando o usuário pertencer a um grupo.
+
+---
+
+# 5. RECEITAS E DESPESAS
+
+## 5.1. Receitas
+O usuário poderá registrar:
+
+- Salário.
+- Renda extra.
+- Trabalho autônomo.
+- Benefícios.
+- Rendimentos.
+- Outras entradas.
+Cada registro deverá possuir:
+
+- Descrição.
+- Valor.
+- Categoria.
+- Data de recebimento.
+- Conta de destino.
+- Responsável.
+- Tipo de receita.
+- Recorrência.
+- Observações.
+
+## 5.2. Despesas
+O usuário poderá registrar:
+
+- Alimentação.
+- Moradia.
+- Transporte.
+- Saúde.
+- Educação.
+- Lazer.
+- Compras.
+- Assinaturas.
+- Serviços.
+- Impostos.
+- Outras despesas.
+Cada despesa deverá possuir:
+
+- Descrição.
+- Valor.
+- Categoria.
+- Data da compra.
+- Data de vencimento.
+- Data do pagamento.
+- Responsável.
+- Forma de pagamento.
+- Conta ou cartão utilizado.
+- Situação.
+- Observações.
+
+## 5.3. Categorias personalizadas
+O usuário poderá criar, editar e excluir categorias próprias.
+
+As categorias deverão permitir classificação individual ou familiar.
+
+---
+
+# 6. CONTAS E CARTEIRAS
+O usuário poderá cadastrar diferentes locais onde mantém seu dinheiro.
+
+Exemplos:
+
+- Dinheiro em espécie.
+- Conta corrente.
+- Conta digital.
+- Poupança.
+- Carteira pessoal.
+- Carteira familiar.
+- Outras contas.
+Cada conta deverá possuir:
+
+- Nome.
+- Instituição opcional.
+- Tipo.
+- Saldo inicial.
+- Data de criação.
+- Responsável.
+- Situação.
+Transferências entre contas deverão ser registradas como transferências, sem gerar receita ou despesa adicional.
+
+---
+
+# 7. COMPROMISSOS FINANCEIROS
+Este módulo será responsável pelo acompanhamento de contas, pagamentos e despesas recorrentes.
+
+## 7.1. Tipos de compromissos
+
+- Assinaturas.
+- Internet.
+- Água.
+- Energia elétrica.
+- Aluguel.
+- Mensalidades.
+- Academia.
+- Seguros.
+- Serviços.
+- Outros pagamentos recorrentes.
+
+## 7.2. Cadastro
+Cada compromisso deverá possuir:
+
+- Nome.
+- Descrição.
+- Valor previsto.
+- Categoria.
+- Frequência.
+- Data inicial.
+- Data final opcional.
+- Dia de vencimento.
+- Responsável.
+- Forma de pagamento.
+- Conta utilizada.
+- Antecedência do lembrete.
+- Situação.
+
+## 7.3. Frequência
+
+- Única.
+- Diária.
+- Semanal.
+- Mensal.
+- Bimestral.
+- Trimestral.
+- Semestral.
+- Anual.
+- Personalizada.
+
+## 7.4. Checklist mensal
+O sistema deverá gerar automaticamente os compromissos previstos para cada período.
+
+Cada compromisso terá uma situação:
+
+- Pendente.
+- Pago e confirmado.
+- Atrasado.
+- Cancelado.
+- Não confirmado.
+- Dispensado.
+O usuário poderá confirmar o pagamento manualmente.
+
+O sistema não poderá considerar uma conta paga apenas porque chegou a data de vencimento.
+
+## 7.5. Fluxo de lembretes
+Exemplo:
+
+- Um dia antes: aviso de pagamento próximo.
+- No vencimento: aviso de compromisso previsto.
+- No dia seguinte: lembrete caso não haja confirmação.
+- Após determinado período: novo aviso conforme configuração.
+O usuário poderá personalizar os intervalos e a quantidade de notificações.
+
+---
+
+# 8. EMPRÉSTIMOS, FINANCIAMENTOS E DÍVIDAS
+O sistema terá um módulo específico para administrar dívidas.
+
+## 8.1. Tipos
+
+- Empréstimo pessoal.
+- Empréstimo consignado.
+- Financiamento de veículo.
+- Financiamento imobiliário.
+- Empréstimo informal.
+- Compras parceladas.
+- Outras dívidas.
+
+## 8.2. Informações do contrato
+
+- Nome do contrato.
+- Tipo de dívida.
+- Instituição ou credor.
+- Valor contratado.
+- Valor total previsto.
+- Taxa de juros.
+- Quantidade de parcelas.
+- Valor das parcelas.
+- Data da primeira parcela.
+- Data da última parcela.
+- Responsável.
+- Observações.
+- Situação.
+
+## 8.3. Controle das parcelas
+Cada parcela deverá possuir:
+
+- Número.
+- Valor previsto.
+- Vencimento.
+- Data do pagamento.
+- Situação.
+- Encargos adicionais.
+- Registro de antecipação, quando houver.
+Situações:
+
+- Pendente.
+- Paga.
+- Atrasada.
+- Antecipada.
+- Renegociada.
+- Cancelada.
+
+## 8.4. Análises das dívidas
+O sistema deverá apresentar:
+
+- Total contratado.
+- Total registrado como pago.
+- Parcelas restantes.
+- Valor nominal restante.
+- Saldo devedor informado ou estimado.
+- Previsão de término.
+- Histórico de atrasos.
+- Comprometimento da renda.
+- Comparação entre dívidas.
+
+## 8.5. Simulador
+O usuário poderá simular:
+
+- Antecipação de parcelas.
+- Pagamentos extras.
+- Aumento dos pagamentos mensais.
+- Redução do prazo.
+- Estimativa de quitação.
+Simulações não deverão ser confundidas com condições reais de quitação oferecidas pelo credor.
+
+---
+
+# 9. CARTÕES DE CRÉDITO
+O sistema permitirá cadastrar cartões.
+
+Informações:
+
+- Nome do cartão.
+- Instituição.
+- Limite total.
+- Limite utilizado registrado.
+- Dia de fechamento.
+- Dia de vencimento.
+- Responsável.
+
+## 9.1. Faturas
+Cada fatura deverá apresentar:
+
+- Período.
+- Compras realizadas.
+- Parcelamentos.
+- Valor total.
+- Data de vencimento.
+- Situação.
+- Pagamento confirmado.
+
+## 9.2. Compras parceladas
+Cada compra parcelada deverá gerar parcelas futuras.
+
+O sistema deverá associar cada parcela à fatura correspondente.
+
+O pagamento da fatura não poderá gerar duplicidade de despesas: a compra será reconhecida como gasto e a quitação da fatura será tratada como liquidação da obrigação.
+
+---
+
+# 10. METAS E COFRES FINANCEIROS
+O módulo permitirá criar objetivos financeiros individuais ou familiares.
+
+## 10.1. Exemplos
+
+- Reserva de emergência.
+- Viagem.
+- Compra de notebook.
+- Compra de veículo.
+- Reforma.
+- Objetivos familiares.
+
+## 10.2. Cadastro da meta
+
+- Nome.
+- Descrição.
+- Valor desejado.
+- Valor inicial.
+- Data de início.
+- Prazo.
+- Responsáveis.
+- Tipo de meta.
+- Visibilidade.
+- Frequência de depósitos.
+
+## 10.3. Movimentações
+Cada meta deverá possuir um histórico de:
+
+- Depósitos.
+- Retiradas.
+- Ajustes.
+- Alterações de objetivo.
+- Pausas.
+- Conclusões.
+Os depósitos serão registros de intenção e movimentação financeira. O sistema não deverá assumir que o dinheiro foi transferido para uma conta bancária.
+
+## 10.4. Avaliação automática
+O sistema analisará:
+
+- Valor acumulado.
+- Progresso percentual.
+- Média de depósitos.
+- Frequência de depósitos.
+- Meses sem contribuição.
+- Previsão de conclusão.
+- Diferença entre prazo inicial e prazo estimado.
+
+## 10.5. Simulações
+O usuário poderá simular:
+
+- Depósitos maiores.
+- Depósitos menores.
+- Alteração de frequência.
+- Mudança do valor desejado.
+- Mudança do prazo.
+Cada meta terá uma área de acompanhamento própria, com histórico e mensagens de avaliação.
+
+---
+
+# 11. CALENDÁRIO FINANCEIRO
+O calendário apresentará os compromissos e movimentações organizados por data.
+
+Deverá exibir:
+
+- Vencimentos.
+- Pagamentos previstos.
+- Receitas esperadas.
+- Parcelas.
+- Faturas.
+- Depósitos planejados.
+- Metas.
+- Eventos financeiros familiares.
+O usuário poderá visualizar por dia, semana e mês.
+
+---
+
+# 12. CENTRAL DE NOTIFICAÇÕES
+O sistema terá notificações internas e push.
+
+## 12.1. Categorias
+
+- Pagamentos próximos.
+- Pagamentos pendentes.
+- Contas atrasadas.
+- Parcelas de dívidas.
+- Vencimentos de cartões.
+- Metas sem depósitos.
+- Alterações familiares.
+- Avaliações disponíveis.
+- Alertas financeiros.
+
+## 12.2. Preferências
+O usuário poderá configurar:
+
+- Tipos de notificações.
+- Horários.
+- Antecedência.
+- Frequência.
+- Dias permitidos.
+- Notificações pessoais.
+- Notificações familiares.
+- Notificações por meta.
+
+## 12.3. Histórico
+Toda notificação deverá ser armazenada.
+
+Informações:
+
+- Tipo.
+- Destinatário.
+- Data.
+- Conteúdo.
+- Origem.
+- Situação de leitura.
+- Referência ao compromisso ou meta.
+O sistema deverá evitar notificações duplicadas.
+
+---
+
+# 13. CENTRAL DE AVALIAÇÕES
+A plataforma deverá possuir uma área dedicada às avaliações financeiras.
+
+## 13.1. Avaliação mensal geral
+O sistema deverá produzir:
+
+- Receitas registradas.
+- Despesas registradas.
+- Saldo calculado.
+- Compromissos confirmados.
+- Compromissos pendentes.
+- Dívidas.
+- Parcelas.
+- Evolução das metas.
+- Gastos por categoria.
+- Comparação com o mês anterior.
+
+## 13.2. Configuração
+O usuário poderá definir:
+
+- Dia da avaliação.
+- Horário.
+- Frequência.
+- Conteúdo da avaliação.
+- Visão pessoal ou familiar.
+
+## 13.3. Questionário de fechamento
+Quando existirem informações pendentes, o sistema poderá perguntar:
+
+- Você realizou o pagamento?
+- A despesa foi cancelada?
+- O valor mudou?
+- Você esqueceu de registrar?
+- O depósito da meta foi realizado?
+- Houve alguma despesa extraordinária?
+- Deseja adicionar alguma observação?
+As respostas deverão ser armazenadas e utilizadas nos relatórios futuros.
+
+## 13.4. Histórico de avaliações
+Cada avaliação deverá ser preservada.
+
+Alterações posteriores nos registros não poderão apagar silenciosamente o conteúdo de avaliações antigas.
+
+---
+
+# 14. ANÁLISES E RELATÓRIOS
+O sistema deverá disponibilizar relatórios individuais e familiares.
+
+## 14.1. Análises
+
+- Receitas por período.
+- Despesas por período.
+- Gastos por categoria.
+- Evolução mensal.
+- Comparação entre períodos.
+- Comprometimento da renda.
+- Dívidas ativas.
+- Evolução de metas.
+- Despesas recorrentes.
+- Despesas extraordinárias.
+- Previsão de saldo.
+- Histórico de pagamentos.
+
+## 14.2. Exportação
+O usuário poderá exportar relatórios em:
+
+- PDF.
+- Excel.
+- CSV.
+Os relatórios deverão permitir filtros por período, categoria, responsável e grupo familiar.
+
+---
+
+# 15. CENTRAL DE CONVERSAS POR META E AVALIAÇÃO
+Cada meta terá uma área própria de acompanhamento.
+
+A central poderá apresentar:
+
+- Avaliações automáticas.
+- Perguntas sobre depósitos.
+- Alterações de objetivos.
+- Histórico de mensagens.
+- Simulações.
+- Recomendações baseadas nos registros.
+A avaliação mensal geral também terá seu próprio histórico.
+
+Inicialmente, as mensagens poderão ser geradas por regras automáticas. Uma integração com inteligência artificial poderá ser adicionada futuramente, com controle de custos e proteção dos dados.
+
+---
+
+# 16. REGRAS DE NEGÓCIO FUNDAMENTAIS
+Estas regras deverão ser respeitadas em toda a aplicação.
+
+1. Uma movimentação planejada não equivale a uma movimentação realizada.
+2. O sistema nunca deverá inventar pagamentos ou depósitos.
+3. Pagamentos precisam de confirmação ou registro válido.
+4. Compromissos não confirmados deverão permanecer identificados como pendentes.
+5. Transferências entre contas não deverão ser contabilizadas como receita ou despesa.
+6. Compras e pagamentos de faturas não poderão gerar despesas duplicadas.
+7. As parcelas deverão manter histórico próprio.
+8. Metas deverão manter histórico de depósitos e retiradas.
+9. Alterações em registros financeiros importantes deverão ser auditáveis.
+10. Informações familiares deverão respeitar permissões.
+11. Dados pessoais não deverão ser compartilhados automaticamente.
+12. Previsões deverão ser identificadas como estimativas.
+13. O sistema deverá distinguir saldo disponível, saldo registrado, saldo previsto e saldo devedor.
+14. Avaliações anteriores deverão permanecer preservadas.
+15. Notificações não poderão ser enviadas repetidamente sem respeitar as configurações do usuário.
+
+---
+
+# 17. ARQUITETURA TECNOLÓGICA
+
+## 17.1. Interface
+Tecnologias:
+
+- HTML.
+- CSS.
+- JavaScript.
+- React como opção para estruturar componentes e páginas.
+- Chart.js para gráficos.
+- PWA para instalação e recursos de aplicação web.
+
+## 17.2. Backend
+Firebase:
+
+- Firebase Authentication.
+- Cloud Firestore.
+- Firebase Storage.
+- Cloud Functions.
+- Firebase Cloud Messaging.
+- Cloud Scheduler, quando necessário.
+- Firebase Hosting.
+
+## 17.3. Responsabilidades
+**Frontend**
+
+- Interface.
+- Formulários.
+- Navegação.
+- Validação de dados.
+- Gráficos.
+- Experiência do usuário.
+**Backend**
+
+- Processamento de operações.
+- Regras de negócio críticas.
+- Verificação de permissões.
+- Geração de avaliações.
+- Processamento de agendamentos.
+- Envio de notificações.
+- Rotinas automáticas.
+**Banco de dados**
+
+- Usuários.
+- Famílias.
+- Transações.
+- Compromissos.
+- Dívidas.
+- Parcelas.
+- Metas.
+- Notificações.
+- Avaliações.
+
+---
+
+# 18. ESTRUTURA INICIAL DO BANCO DE DADOS
+Coleções conceituais:
+
+ColeçãoFinalidadeusuariosDados dos usuáriosfamiliasGrupos familiaresmembros_familiaRelação entre usuários e famíliasconvitesConvites para gruposcontasContas e carteirastransacoesReceitas, despesas e transferênciascategoriasCategorias financeirascompromissosPagamentos recorrentesocorrencias_compromissosCada vencimento de um compromissodividasContratos de empréstimos e financiamentosparcelasParcelas dos contratoscartoesCartões de créditofaturasFaturas dos cartõescompras_parceladasCompras parceladasmetasObjetivos financeirosmovimentos_metasDepósitos e retiradasnotificacoesAlertas e mensagensdispositivosTokens de notificações pushavaliacoesAvaliações financeirasconfiguracoesPreferências da plataformaauditoriaHistórico de operações importantesA estrutura definitiva deverá ser elaborada antes da implementação do banco, com identificadores, relacionamentos, regras de leitura e gravação.
+
+---
+
+# 19. SEGURANÇA E PRIVACIDADE
+O sistema armazenará informações financeiras pessoais e deverá seguir boas práticas de segurança.
+
+Requisitos:
+
+- Autenticação segura.
+- Regras de segurança do Firestore.
+- Separação dos dados por usuário e família.
+- Controle de permissões.
+- Validação no backend.
+- Proteção de credenciais.
+- Histórico de alterações.
+- Controle de sessões.
+- Backups e recuperação.
+- Proteção dos tokens de notificação.
+- Adequação à LGPD.
+A interface não poderá ser considerada uma barreira de segurança. As permissões deverão ser verificadas no backend e no banco de dados.
+
+---
+
+# 20. NOTIFICAÇÕES E PWA
+A primeira versão deverá ser uma aplicação web responsiva, preparada para instalação como PWA.
+
+## 20.1. Recursos
+
+- Manifest.
+- Service Worker.
+- Ícones de instalação.
+- Layout responsivo.
+- Notificações push.
+- Central interna de notificações.
+
+## 20.2. Processamento automático
+O backend deverá verificar periodicamente:
+
+- Compromissos próximos.
+- Pagamentos pendentes.
+- Parcelas.
+- Faturas.
+- Metas sem movimentação.
+- Avaliações programadas.
+As tarefas automáticas deverão possuir identificadores para impedir execuções duplicadas.
+
+O processamento deverá funcionar mesmo que o usuário não esteja conectado à plataforma.
+
+A compatibilidade de notificações deverá ser testada nos navegadores e dispositivos suportados.
+
+---
+
+# 21. ORGANIZAÇÃO DE PASTAS
+Uma estrutura inicial recomendada:
+
+```
+gestao-financeira/
+│
+├── public/
+│   ├── assets/
+│   │   ├── icons/
+│   │   ├── images/
+│   │   └── fonts/
+│   ├── manifest.json
+│   └── service-worker.js
+│
+├── src/
+│   ├── assets/
+│   │
+│   ├── components/
+│   │   ├── layout/
+│   │   ├── navigation/
+│   │   ├── dashboard/
+│   │   ├── forms/
+│   │   ├── charts/
+│   │   ├── tables/
+│   │   └── notifications/
+│   │
+│   ├── pages/
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── transactions/
+│   │   ├── accounts/
+│   │   ├── family/
+│   │   ├── commitments/
+│   │   ├── debts/
+│   │   ├── cards/
+│   │   ├── goals/
+│   │   ├── calendar/
+│   │   ├── reports/
+│   │   ├── evaluations/
+│   │   └── settings/
+│   │
+│   ├── services/
+│   │   ├── firebase/
+│   │   ├── auth/
+│   │   ├── database/
+│   │   ├── notifications/
+│   │   └── reports/
+│   │
+│   ├── hooks/
+│   ├── utils/
+│   ├── styles/
+│   ├── config/
+│   └── app/
+│
+├── functions/
+│   ├── src/
+│   │   ├── schedules/
+│   │   ├── notifications/
+│   │   ├── evaluations/
+│   │   └── financial/
+│   └── package.json
+│
+├── docs/
+│   ├── projeto.md
+│   ├── requisitos.md
+│   ├── banco-de-dados.md
+│   ├── regras-financeiras.md
+│   └── roadmap.md
+│
+├── .env.example
+├── .gitignore
+├── firebase.json
+├── firestore.rules
+└── README.md
+```
+A estrutura poderá ser ajustada conforme as decisões técnicas da implementação.
+
+---
+
+# 22. FASES DE DESENVOLVIMENTO
+O desenvolvimento será realizado em oito fases.
+
+## FASE 1 — Planejamento e identidade
+Objetivos:
+
+- Definir nome.
+- Definir identidade visual.
+- Definir cores e tipografia.
+- Criar mapa de navegação.
+- Definir todas as telas.
+- Definir componentes.
+- Elaborar protótipo visual.
+- Documentar regras de funcionamento.
+Entregáveis:
+
+- Documento funcional.
+- Mapa de telas.
+- Guia visual.
+- Protótipo inicial.
+- Estrutura de pastas.
+
+## FASE 2 — Fundação e autenticação
+Objetivos:
+
+- Configurar projeto Firebase.
+- Implementar cadastro.
+- Implementar login.
+- Implementar recuperação de senha.
+- Criar perfil do usuário.
+- Configurar Firestore.
+- Criar regras de segurança.
+- Implementar navegação autenticada.
+Entregáveis:
+
+- Sistema de autenticação funcional.
+- Banco inicial.
+- Perfil de usuário.
+- Estrutura de permissões.
+
+## FASE 3 — Controle financeiro individual
+Objetivos:
+
+- Dashboard.
+- Cadastro de receitas.
+- Cadastro de despesas.
+- Categorias.
+- Contas e carteiras.
+- Transferências.
+- Filtros.
+- Relatórios básicos.
+- Gráficos.
+Entregáveis:
+
+- Controle financeiro individual funcional.
+- Histórico de movimentações.
+- Dashboard integrado ao banco.
+
+## FASE 4 — Gestão familiar
+Objetivos:
+
+- Criar famílias.
+- Convidar integrantes.
+- Configurar permissões.
+- Compartilhar despesas.
+- Dividir valores.
+- Criar receitas familiares.
+- Criar metas coletivas.
+- Gerar análises familiares.
+Entregáveis:
+
+- Ambiente familiar funcional.
+- Controle de acesso.
+- Relatório familiar.
+
+## FASE 5 — Compromissos, cartões e dívidas
+Objetivos:
+
+- Criar compromissos recorrentes.
+- Criar checklist mensal.
+- Implementar empréstimos.
+- Implementar financiamentos.
+- Implementar parcelas.
+- Implementar cartões.
+- Implementar faturas.
+- Criar calendário financeiro.
+- Integrar compromissos ao dashboard.
+Entregáveis:
+
+- Controle completo de compromissos.
+- Gestão de dívidas.
+- Gestão de cartões.
+- Calendário funcional.
+
+## FASE 6 — Metas e inteligência financeira
+Objetivos:
+
+- Criar metas.
+- Criar cofres.
+- Registrar depósitos e retiradas.
+- Criar avaliações individuais.
+- Criar avaliações familiares.
+- Implementar comparações.
+- Implementar previsões.
+- Criar histórico de avaliações.
+- Criar central de acompanhamento por meta.
+Entregáveis:
+
+- Sistema de metas.
+- Avaliações periódicas.
+- Análises financeiras.
+- Histórico de evolução.
+
+## FASE 7 — Automações e notificações
+Objetivos:
+
+- Preparar PWA.
+- Configurar notificações push.
+- Criar registro de dispositivos.
+- Implementar agendador.
+- Implementar lembretes.
+- Implementar avisos de vencimento.
+- Implementar alertas de metas.
+- Implementar avaliações programadas.
+- Criar central de notificações.
+- Implementar controle contra duplicidade.
+Entregáveis:
+
+- PWA instalável.
+- Notificações funcionais.
+- Agendamentos no backend.
+- Avaliações automáticas.
+
+## FASE 8 — Testes e publicação
+Objetivos:
+
+- Testar autenticação.
+- Testar permissões.
+- Testar cálculos.
+- Testar transferências.
+- Testar parcelas.
+- Testar cartões.
+- Testar notificações.
+- Testar grupos familiares.
+- Testar responsividade.
+- Corrigir falhas.
+- Publicar a plataforma.
+Entregáveis:
+
+- Versão estável.
+- Documentação técnica.
+- Aplicação publicada.
+- Processo de manutenção.
+
+---
+
+# 23. CRITÉRIOS DE CONCLUSÃO DO PROJETO
+A plataforma será considerada pronta para sua primeira publicação completa quando:
+
+- O usuário conseguir criar e acessar sua conta.
+- Conseguir registrar receitas e despesas.
+- Conseguir acompanhar o próprio saldo registrado.
+- Conseguir criar e participar de uma família.
+- Conseguir dividir despesas.
+- Conseguir cadastrar compromissos recorrentes.
+- Conseguir acompanhar empréstimos e financiamentos.
+- Conseguir administrar cartões e parcelas.
+- Conseguir criar metas e cofres.
+- Conseguir visualizar avaliações financeiras.
+- Conseguir receber notificações nos dispositivos compatíveis.
+- Conseguir consultar relatórios.
+- As regras de segurança estiverem testadas.
+- Os dados estiverem separados corretamente entre usuários e famílias.
+
+---
+
+# 24. DIRETRIZES DE DESENVOLVIMENTO
+Durante todo o desenvolvimento, deverão ser respeitadas as seguintes diretrizes:
+
+1. Desenvolver por fases, sem antecipar módulos que dependem de outros.
+2. Não criar funcionalidades sem definir suas regras.
+3. Não duplicar registros financeiros.
+4. Não misturar dados pessoais e familiares.
+5. Manter o código organizado por responsabilidade.
+6. Separar interface, serviços e regras de negócio.
+7. Utilizar variáveis de ambiente quando necessário.
+8. Nunca publicar credenciais privadas.
+9. Testar cada funcionalidade antes de avançar.
+10. Manter documentação atualizada.
+11. Registrar decisões importantes de arquitetura.
+12. Utilizar o Firebase de forma segura.
+13. Preparar o sistema para crescimento.
+14. Manter a aplicação responsiva.
+15. Priorizar a consistência dos dados financeiros.
+
+---
+
+# 25. VISÃO FUTURA
+Após a primeira versão completa, poderão ser avaliadas novas funcionalidades:
+
+- Assistente financeiro com inteligência artificial.
+- Recomendações personalizadas.
+- Importação de extratos.
+- Integração com Open Finance.
+- Aplicativo Android.
+- Aplicativo iOS.
+- Leitura de comprovantes.
+- Digitalização de recibos.
+- Planejamento financeiro avançado.
+- Simulações de investimentos.
+- Mais ferramentas de educação financeira.
+- Planos de assinatura para monetização da plataforma.
+Essas funcionalidades não fazem parte da primeira entrega e deverão ser avaliadas separadamente.
+
+---
+
+# 26. DEFINIÇÃO FINAL DO PRODUTO
+O produto será uma plataforma de gestão financeira pessoal e familiar, baseada em registros individuais, acompanhamento de compromissos e análises periódicas.
+
+Sua principal característica será a integração entre controle financeiro, organização familiar, metas e automações.
+
+A plataforma deverá acompanhar o usuário ao longo do tempo, identificar informações pendentes, solicitar confirmações e produzir avaliações com base nos dados efetivamente registrados.
+
+**Princípio central do projeto:**
+
+Não apenas registrar para onde o dinheiro foi, mas ajudar o usuário a entender sua situação atual, organizar seus compromissos e planejar para onde deseja levar sua vida financeira.
+
+**Documento-base — Versão 1.0.**

@@ -1,0 +1,220 @@
+@media(max-width:1150px) {
+    .sidebar {
+        width: 225px
+    }
+
+    .main-area {
+        margin-left: 225px
+    }
+
+    .content {
+        padding-left: 26px;
+        padding-right: 26px
+    }
+
+    .topbar {
+        padding: 0 26px
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr)
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1.3fr 1fr
+    }
+}
+
+@media(max-width:850px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform .22s;
+        box-shadow: 8px 0 30px #0002
+    }
+
+    .sidebar.open {
+        transform: translateX(0)
+    }
+
+    .main-area {
+        margin-left: 0
+    }
+
+    .mobile-menu {
+        display: grid;
+        margin-right: 8px
+    }
+
+    .topbar {
+        justify-content: flex-start;
+        padding: 0 18px
+    }
+
+    .breadcrumb {
+        flex: 1
+    }
+
+    .top-actions {
+        gap: 9px
+    }
+
+    .content {
+        padding: 24px 18px
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr
+    }
+
+    .goals-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        column-gap: 18px
+    }
+
+    .goals-panel .panel-heading {
+        grid-column: 1/-1
+    }
+
+    .goals-panel .goal-add {
+        grid-column: 1/-1
+    }
+
+    .goal-main {
+        margin-top: 15px
+    }
+
+    .second-goal {
+        margin-top: 15px
+    }
+}
+
+@media(max-width:560px) {
+    .content {
+        padding: 21px 13px
+    }
+
+    .topbar {
+        height: 56px;
+        padding: 0 12px
+    }
+
+    .page-heading {
+        align-items: flex-start;
+        gap: 13px;
+        flex-direction: column
+    }
+
+    .page-heading h1 {
+        font-size: 24px
+    }
+
+    .heading-actions {
+        width: 100%
+    }
+
+    .heading-actions .button:first-child {
+        margin-right: auto
+    }
+
+    .summary-grid {
+        gap: 8px
+    }
+
+    .summary-card {
+        padding: 12px;
+        min-height: 105px
+    }
+
+    .amount {
+        font-size: 17px
+    }
+
+    .card-top {
+        font-size: 9px
+    }
+
+    .card-foot {
+        font-size: 8px
+    }
+
+    .due-dots {
+        left: 12px
+    }
+
+    .dashboard-grid {
+        gap: 10px;
+        margin-top: 10px
+    }
+
+    .panel {
+        padding: 14px 12px
+    }
+
+    .chart-legend {
+        gap: 8px;
+        font-size: 8px
+    }
+
+    .chart-legend strong {
+        display: none
+    }
+
+    .chart-caption {
+        font-size: 8px
+    }
+
+    .goals-panel {
+        display: block
+    }
+
+    .goal-main {
+        margin-top: 17px
+    }
+
+    .second-goal {
+        margin-top: 15px
+    }
+
+    .transactions-panel {
+        padding-right: 8px;
+        padding-left: 8px
+    }
+
+    .transactions-panel .panel-heading {
+        padding: 0 4px
+    }
+
+    .table-wrap {
+        margin-top: 13px
+    }
+
+    .footer {
+        font-size: 8px
+    }
+
+    .footer span:last-child {
+        display: none
+    }
+
+    .commitment {
+        gap: 7px
+    }
+
+    .commitment-name small {
+        font-size: 7px
+    }
+
+    .commitment>strong {
+        font-size: 8px
+    }
+
+    .status-dot {
+        display: none
+    }
+
+    .form-row {
+        grid-template-columns: 1fr
+    }
+}
+

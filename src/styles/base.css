@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --orbe-green: #178154
+}
+
+:root {
+    font-family: 'DM Sans', sans-serif;
+    color: #202a25;
+    background: #f5f7f4;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    --ink: #202a25;
+    --muted: #89918b;
+    --green: #19845a;
+    --deep: #101b17;
+    --line: #edf0ed
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    min-width: 320px
+}
+
+button,
+a,
+input,
+select {
+    font: inherit
+}
+
+button {
+    cursor: pointer
+}
+
+.page-load-error {
+    width: min(480px, calc(100% - 32px));
+    margin: 15vh auto;
+    padding: 28px;
+    border: 1px solid #e8eee9;
+    border-radius: 12px;
+    background: white;
+    color: #36443a
+}
+.page-load-error h1 {
+    font: 700 20px Manrope, sans-serif
+}
+.page-load-error p {
+    color: #7d8981;
+    font-size: 12px
+}
+.page-load-error button {
+    border: 0;
+    border-radius: 6px;
+    padding: 9px 13px;
+    background: #178154;
+    color: white
+}
+.app-loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #58665d;
+    font: 600 13px Manrope, sans-serif
+}
+.app-loading img {
+    width: 54px;
+    height: 54px;
+    object-fit: contain
+}

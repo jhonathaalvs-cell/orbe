@@ -1,0 +1,119 @@
+.content {
+    max-width: 1500px;
+    padding: 31px 40px 20px;
+    margin: auto
+}
+
+.page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 19px
+}
+
+.eyebrow {
+    font-size: 9px;
+    letter-spacing: 1.4px;
+    color: #85918a;
+    font-weight: 700
+}
+
+.live-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #37b477;
+    margin: 0 6px 1px 0
+}
+
+.page-heading h1 {
+    font: 700 27px Manrope, sans-serif;
+    letter-spacing: -.8px;
+    margin: 8px 0 3px;
+    color: #202a25
+}
+
+.page-heading h1 span {
+    font-size: 18px;
+    color: #e5ad59
+}
+
+.page-heading p,
+.panel-heading p {
+    font-size: 11px;
+    color: #8c958e;
+    margin: 0
+}
+
+.heading-actions {
+    display: flex;
+    gap: 9px
+}
+
+.button {
+    border: 1px solid #e7ebe7;
+    background: white;
+    padding: 9px 12px;
+    border-radius: 7px;
+    color: #57635b;
+    font-size: 11px;
+    font-weight: 600
+}
+
+.button-quiet span {
+    padding-left: 11px;
+    color: #8e9992
+}
+
+.button-primary {
+    background: #178154;
+    border-color: #178154;
+    color: white;
+    padding: 10px 15px;
+    box-shadow: 0 2px 4px #13805024
+}
+
+.button-primary:hover {
+    background: #126d47
+}
+
+.button-primary span {
+    font-size: 15px;
+    margin-right: 5px
+}
+
+
+.panel {
+    background: white;
+    border: 1px solid #edf0ed;
+    border-radius: 9px;
+    padding: 17px 17px 14px;
+    min-width: 0
+}
+
+.panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start
+}
+
+.panel-heading h2 {
+    font: 700 13px Manrope, sans-serif;
+    letter-spacing: -.2px;
+    margin: 0 0 4px;
+    color: #29342d
+}
+
+.panel-heading p {
+    font-size: 10px
+}
+
+.select-button {
+    border: 1px solid #e9ede9;
+    border-radius: 6px;
+    background: #fff;
+    color: #727e75;
+    padding: 6px 8px;
+    font-size: 9px
+}

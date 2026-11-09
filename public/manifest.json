@@ -1,0 +1,11 @@
+{
+  "name": "Orbe — Gestão financeira",
+  "short_name": "Orbe",
+  "description": "Organização financeira pessoal e familiar.",
+  "lang": "pt-BR",
+  "start_url": "../index.html",
+  "display": "standalone",
+  "background_color": "#f5f7f4",
+  "theme_color": "#101b17",
+  "icons": []
+}

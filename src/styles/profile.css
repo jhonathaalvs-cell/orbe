@@ -1,0 +1,218 @@
+.profile-page {
+    min-width: 0;
+}
+
+body[data-standalone-profile="true"] #profileRoot {
+    max-width: 1500px;
+    padding: 31px 40px 20px;
+    margin: auto;
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 14px
+}
+.profile-card {
+    padding: 20px
+}
+.profile-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-bottom: 18px
+}
+.profile-section-heading h2 {
+    margin: 0 0 4px;
+    color: #29342d;
+    font: 700 14px Manrope, sans-serif
+}
+.profile-section-heading p {
+    margin: 0;
+    color: #89938c;
+    font-size: 10px
+}
+.profile-section-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    background: #eaf6ee;
+    color: #32895c;
+    font-size: 17px
+}
+.preference-icon {
+    background: #f1edfa;
+    color: #806caf
+}
+.notification-icon {
+    background: #fff4e7;
+    color: #be8540
+}
+.security-icon {
+    background: #edf3fa;
+    color: #6285ad
+}
+#profileForm label,
+.profile-form-grid label {
+    display: block;
+    margin: 13px 0;
+    color: #59655d;
+    font-size: 10px;
+    font-weight: 600
+}
+#profileForm input,
+.profile-form-grid select {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px 11px;
+    border: 1px solid #e1e7e2;
+    border-radius: 6px;
+    background: white;
+    color: #334037;
+    outline: none;
+    font-size: 11px
+}
+#profileForm input:focus,
+.profile-form-grid select:focus {
+    border-color: #3fa675;
+    box-shadow: 0 0 0 3px #3fa67520
+}
+#profileForm input[readonly] {
+    background: #f7f8f7;
+    color: #7c877f
+}
+.field-help {
+    display: block;
+    margin-top: 8px;
+    color: #929c95;
+    font-size: 9px;
+    line-height: 1.5
+}
+.profile-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px
+}
+.notification-heading {
+    margin: 24px 0 8px
+}
+.preference-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 0;
+    border-top: 1px solid #f0f2f0;
+    cursor: pointer
+}
+.preference-toggle b,
+.security-action b {
+    display: block;
+    color: #39453d;
+    font-size: 10px
+}
+.preference-toggle small,
+.security-action small {
+    display: block;
+    margin-top: 4px;
+    color: #929c95;
+    font-size: 9px;
+    line-height: 1.45
+}
+.preference-toggle input {
+    width: 34px;
+    height: 19px;
+    flex: 0 0 auto;
+    appearance: none;
+    border: 0;
+    border-radius: 12px;
+    background: #dfe5e0;
+    position: relative;
+    transition: background .15s
+}
+.preference-toggle input::after {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: white;
+    content: "";
+    transition: transform .15s
+}
+.preference-toggle input:checked {
+    background: #36a66e
+}
+.preference-toggle input:checked::after {
+    transform: translateX(15px)
+}
+.security-card {
+    grid-column: 1 / -1
+}
+.security-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 13px 0;
+    border-top: 1px solid #f0f2f0
+}
+.profile-feedback {
+    margin: 12px 0 0;
+    padding: 10px;
+    border-radius: 6px;
+    background: #edf7f0;
+    color: #327d52;
+    font-size: 10px
+}
+.profile-feedback-error {
+    background: #fff1ef;
+    color: #a34234
+}
+.profile-save-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 15px;
+    padding: 14px 17px;
+    border: 1px solid #e8eee9;
+    border-radius: 9px;
+    background: white
+}
+.profile-save-row p {
+    margin: 0;
+    color: #89938c;
+    font-size: 10px
+}
+.profile-save-row button:disabled,
+.security-action button:disabled {
+    opacity: .55;
+    cursor: wait
+}
+@media(max-width:700px) {
+    body[data-standalone-profile="true"] #profileRoot {
+        padding: 24px 16px;
+    }
+
+    .profile-layout {
+        grid-template-columns: 1fr
+    }
+    .security-card {
+        grid-column: auto
+    }
+    .profile-form-grid {
+        grid-template-columns: 1fr
+    }
+    .profile-save-row,
+    .security-action {
+        align-items: stretch;
+        flex-direction: column
+    }
+}
