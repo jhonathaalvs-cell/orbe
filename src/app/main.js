@@ -207,6 +207,7 @@ appRoot.addEventListener("click", (event) => {
   const title = document.querySelector("#pageTitle");
   if (title) title.textContent = page === "perfil" ? "Meu perfil" : page === "inicio" ? "Visão geral" : link.textContent.trim();
   sidebar?.classList.remove("open");
+  document.body.classList.remove("mobile-sidebar-open");
   document.querySelector("#mobileMore")?.setAttribute("aria-expanded", "false");
 
   if (page === "perfil") return showProfile(currentUser);

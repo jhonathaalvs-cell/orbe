@@ -33,6 +33,7 @@ document.addEventListener('pointerdown', (event) => {
   const mobileMore = document.querySelector('#mobileMore');
   if (!sidebar?.classList.contains('open') || sidebar.contains(event.target) || mobileMore?.contains(event.target)) return;
   sidebar.classList.remove('open');
+  document.body.classList.remove('mobile-sidebar-open');
   mobileMore?.setAttribute('aria-expanded', 'false');
 });
 
@@ -381,6 +382,7 @@ sidebarExpand.addEventListener('click', () => {
 const mobileMore = document.querySelector('#mobileMore');
 mobileMore.addEventListener('click', () => {
   const open = sidebar.classList.toggle('open');
+  document.body.classList.toggle('mobile-sidebar-open', open);
   mobileMore.setAttribute('aria-expanded', String(open));
 });
 }
