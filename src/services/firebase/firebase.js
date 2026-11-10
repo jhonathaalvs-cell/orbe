@@ -440,6 +440,9 @@ export async function sendPasswordReset(email) {
 }
 
 export function firebaseErrorMessage(error) {
+  if (error?.code === "permission-denied" && error?.dashboardOperation) {
+    return `O Firestore bloqueou a leitura de ${error.dashboardOperation}. Confira se as regras publicadas pertencem ao projeto orbe-5fa05 e permitem acesso ao usuário autenticado.`;
+  }
   const messages = {
     "auth/email-already-in-use": "Este e-mail já possui cadastro. Entre na sua conta.",
     "auth/invalid-email": "Informe um e-mail válido.",

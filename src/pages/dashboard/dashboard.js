@@ -63,17 +63,36 @@ function todayKey() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
+async function dashboardRead(label, reader) {
+  try {
+    return await reader();
+  } catch (cause) {
+    const error = new Error(cause?.message || 'Falha na leitura do Firestore.', { cause });
+    error.code = cause?.code || 'unknown';
+    error.dashboardOperation = label;
+    throw error;
+  }
+}
+
 async function loadDashboard(user) {
   rows.innerHTML = '<tr><td colspan="4" class="empty-transactions">Carregando movimentações...</td></tr>';
   try {
-    const [transactions, commitments, profile] = await Promise.all([getTransactions(user.uid), getCommitments(user.uid), getUserProfile(user)]);
+    const [transactions, commitments, profile] = await Promise.all([
+      dashboardRead('movimentações (users/{uid}/transactions)', () => getTransactions(user.uid)),
+      dashboardRead('compromissos (users/{uid}/commitments)', () => getCommitments(user.uid)),
+      dashboardRead('perfil (users/{uid})', () => getUserProfile(user)),
+    ]);
     if (activeUser?.uid !== user.uid) return;
     let accounts = [];
     let transfers = [];
     try {
-      [accounts, transfers] = await Promise.all([getAccounts(user.uid), getTransfers(user.uid)]);
-    } catch {
-      showToast('Publique as regras atualizadas do Firestore para carregar contas e carteiras.');
+      [accounts, transfers] = await Promise.all([
+        dashboardRead('contas (users/{uid}/accounts)', () => getAccounts(user.uid)),
+        dashboardRead('transferências (users/{uid}/transfers)', () => getTransfers(user.uid)),
+      ]);
+    } catch (error) {
+      console.error('[Orbe] Falha ao carregar contas/transferências:', error);
+      showToast(firebaseErrorMessage(error));
     }
     if (activeUser?.uid !== user.uid) return;
     money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: profile.currency || 'BRL' });
@@ -82,9 +101,17 @@ async function loadDashboard(user) {
     document.querySelector('#greeting').firstChild.textContent = `Olá, ${profile.name} `;
     const occurrences = await getCommitmentOccurrences(user.uid, commitments);
     let goals = [];
-    try { goals = await getGoals(user.uid); } catch { /* Visão geral permanece disponível se as regras de metas ainda não foram publicadas. */ }
+    try {
+      goals = await dashboardRead('metas (users/{uid}/goals)', () => getGoals(user.uid));
+    } catch (error) {
+      console.warn('[Orbe] Não foi possível carregar metas na Visão geral:', error);
+    }
     let creditCards = [];
-    try { creditCards = await getCreditCards(user.uid); } catch { /* O dashboard segue disponível se as regras de cartões ainda não foram publicadas. */ }
+    try {
+      creditCards = await dashboardRead('cartões (users/{uid}/creditCards)', () => getCreditCards(user.uid));
+    } catch (error) {
+      console.warn('[Orbe] Não foi possível carregar cartões na Visão geral:', error);
+    }
     if (activeUser?.uid !== user.uid) return;
     currentTransactions = transactions;
     currentCommitments = commitments;
