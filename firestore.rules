@@ -39,11 +39,12 @@ service cloud.firestore {
         function validTransaction() {
           let data = request.resource.data;
           let hasCommitmentSource = data.keys().hasAny(['sourceCommitmentId', 'sourceOccurrenceId']);
+          let hasCardSource = data.keys().hasAny(['sourceCardId', 'sourceInvoiceMonth']);
           let hasAccount = data.keys().hasAny(['accountId']);
           return data.keys().hasAll(['type', 'description', 'amount', 'category', 'date', 'createdAt'])
             && data.keys().hasOnly([
               'type', 'description', 'amount', 'category', 'date', 'createdAt',
-              'sourceCommitmentId', 'sourceOccurrenceId', 'accountId'
+              'sourceCommitmentId', 'sourceOccurrenceId', 'sourceCardId', 'sourceInvoiceMonth', 'accountId'
             ])
             && data.type in ['income', 'expense']
             && data.description is string
@@ -66,6 +67,16 @@ service cloud.firestore {
               && data.sourceOccurrenceId is string
               && getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(data.sourceCommitmentId)/occurrences/$(data.sourceOccurrenceId)).data.status == 'paid'
               && getAfter(/databases/$(database)/documents/users/$(userId)/commitments/$(data.sourceCommitmentId)/occurrences/$(data.sourceOccurrenceId)).data.transactionId == transactionId
+            ))
+            && (!hasCardSource || (
+              !hasCommitmentSource
+              && data.keys().hasAll(['sourceCardId', 'sourceInvoiceMonth'])
+              && data.sourceCardId is string
+              && data.sourceInvoiceMonth is string
+              && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(data.sourceCardId)/invoices/$(data.sourceInvoiceMonth)).data.status == 'paid'
+              && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(data.sourceCardId)/invoices/$(data.sourceInvoiceMonth)).data.transactionId == transactionId
+              && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(data.sourceCardId)/invoices/$(data.sourceInvoiceMonth)).data.paidAmount == data.amount
+              && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(data.sourceCardId)/invoices/$(data.sourceInvoiceMonth)).data.paidDate == data.date
             ));
         }
 
@@ -263,6 +274,104 @@ service cloud.firestore {
           allow update: if false;
           allow delete: if ownsUser(userId)
             && exists(/databases/$(database)/documents/users/$(userId)/goals/$(goalId));
+        }
+      }
+
+      match /creditCards/{cardId} {
+        function validCard(data) {
+          return data.keys().hasAll(['name', 'brand', 'lastFour', 'creditLimit', 'closingDay', 'dueDay', 'active', 'createdAt', 'updatedAt'])
+            && data.keys().hasOnly(['name', 'brand', 'lastFour', 'creditLimit', 'closingDay', 'dueDay', 'active', 'createdAt', 'updatedAt'])
+            && data.name is string && data.name.size() > 0 && data.name.size() <= 50
+            && data.brand in ['visa', 'mastercard', 'elo', 'amex', 'other']
+            && data.lastFour is string && (data.lastFour == '' || data.lastFour.matches('^\\d{4}$'))
+            && data.creditLimit is number && data.creditLimit > 0 && data.creditLimit <= 1000000000
+            && data.closingDay is int && data.closingDay >= 1 && data.closingDay <= 28
+            && data.dueDay is int && data.dueDay >= 1 && data.dueDay <= 28
+            && data.active is bool;
+        }
+        allow get, list: if ownsUser(userId);
+        allow create: if ownsUser(userId)
+          && validCard(request.resource.data)
+          && request.resource.data.active == true
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if ownsUser(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'brand', 'lastFour', 'creditLimit', 'closingDay', 'dueDay', 'active', 'updatedAt'])
+          && validCard(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false;
+
+        match /purchases/{purchaseId} {
+          allow get, list: if ownsUser(userId);
+          allow create: if ownsUser(userId)
+            && get(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)).data.active == true
+            && request.resource.data.keys().hasAll(['cardId', 'description', 'category', 'amount', 'date', 'invoiceMonth', 'dueDate', 'createdAt'])
+            && request.resource.data.keys().hasOnly(['cardId', 'description', 'category', 'amount', 'date', 'invoiceMonth', 'dueDate', 'createdAt', 'installmentNumber', 'installmentCount'])
+            && request.resource.data.cardId == cardId
+            && request.resource.data.description is string && request.resource.data.description.size() > 0 && request.resource.data.description.size() <= 80
+            && request.resource.data.category is string && request.resource.data.category.size() > 0 && request.resource.data.category.size() <= 40
+            && request.resource.data.amount is number && request.resource.data.amount > 0 && request.resource.data.amount <= 1000000000
+            && request.resource.data.date is string && request.resource.data.date.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && request.resource.data.invoiceMonth is string && request.resource.data.invoiceMonth.matches('^\\d{4}-\\d{2}$')
+            && request.resource.data.dueDate is string && request.resource.data.dueDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+            && ((!('installmentNumber' in request.resource.data) && !('installmentCount' in request.resource.data))
+              || (request.resource.data.installmentNumber is int && request.resource.data.installmentNumber >= 1
+                && request.resource.data.installmentCount is int && request.resource.data.installmentCount >= 2 && request.resource.data.installmentCount <= 10
+                && request.resource.data.installmentNumber <= request.resource.data.installmentCount))
+            && request.resource.data.createdAt == request.time
+            && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)/invoices/$(request.resource.data.invoiceMonth)).data.status == 'open'
+            && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)/invoices/$(request.resource.data.invoiceMonth)).data.lastPurchaseId == purchaseId
+            && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)/invoices/$(request.resource.data.invoiceMonth)).data.lastPurchaseAmount == request.resource.data.amount;
+          allow update, delete: if false;
+        }
+
+        match /invoices/{invoiceMonth} {
+          function validInvoice(data) {
+            return data.keys().hasAll(['cardId', 'invoiceMonth', 'dueDate', 'total', 'purchaseCount', 'status', 'lastPurchaseId', 'lastPurchaseAmount', 'createdAt', 'updatedAt'])
+              && data.keys().hasOnly(['cardId', 'invoiceMonth', 'dueDate', 'total', 'purchaseCount', 'status', 'lastPurchaseId', 'lastPurchaseAmount', 'createdAt', 'updatedAt', 'paidAt', 'paidDate', 'paidAmount', 'transactionId'])
+              && data.cardId == cardId
+              && data.invoiceMonth == invoiceMonth
+              && data.dueDate is string && data.dueDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+              && data.total is number && data.total > 0 && data.total <= 1000000000
+              && data.purchaseCount is int && data.purchaseCount > 0
+              && data.status in ['open', 'paid']
+              && data.lastPurchaseId is string
+              && data.lastPurchaseAmount is number && data.lastPurchaseAmount > 0
+              && data.createdAt is timestamp && data.updatedAt == request.time;
+          }
+          allow get, list: if ownsUser(userId);
+          allow create: if ownsUser(userId)
+            && validInvoice(request.resource.data)
+            && request.resource.data.status == 'open'
+            && request.resource.data.purchaseCount == 1
+            && request.resource.data.total == request.resource.data.lastPurchaseAmount
+            && request.resource.data.createdAt == request.time
+            && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)/purchases/$(request.resource.data.lastPurchaseId)).data.invoiceMonth == invoiceMonth;
+          allow update: if ownsUser(userId)
+            && validInvoice(request.resource.data)
+            && request.resource.data.createdAt == resource.data.createdAt
+            && (
+              (resource.data.status == 'open'
+                && request.resource.data.status == 'open'
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dueDate', 'total', 'purchaseCount', 'lastPurchaseId', 'lastPurchaseAmount', 'updatedAt'])
+                && request.resource.data.total == resource.data.total + request.resource.data.lastPurchaseAmount
+                && request.resource.data.purchaseCount == resource.data.purchaseCount + 1
+                && getAfter(/databases/$(database)/documents/users/$(userId)/creditCards/$(cardId)/purchases/$(request.resource.data.lastPurchaseId)).data.invoiceMonth == invoiceMonth)
+              || (resource.data.status == 'open'
+                && request.resource.data.status == 'paid'
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paidAt', 'paidDate', 'paidAmount', 'transactionId', 'updatedAt'])
+                && request.resource.data.paidAt == request.time
+                && request.resource.data.paidDate is string && request.resource.data.paidDate.matches('^\\d{4}-\\d{2}-\\d{2}$')
+                && request.resource.data.paidAmount == resource.data.total
+                && request.resource.data.transactionId is string
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceCardId == cardId
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.sourceInvoiceMonth == invoiceMonth
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.type == 'expense'
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.amount == request.resource.data.paidAmount
+                && getAfter(/databases/$(database)/documents/users/$(userId)/transactions/$(request.resource.data.transactionId)).data.date == request.resource.data.paidDate)
+            );
+          allow delete: if false;
         }
       }
     }

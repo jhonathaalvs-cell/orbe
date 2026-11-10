@@ -1,257 +1,457 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#101b17" />
-  <meta name="description" content="Resumo da sua vida financeira no Orbe." />
-  <base href="../../../" />
-  <title>Visão geral | Orbe</title>
-  <link rel="stylesheet" href="src/styles/base.css" />
-  <link rel="stylesheet" href="src/styles/layout.css" />
-  <link rel="stylesheet" href="src/styles/components.css" />
-  <link rel="stylesheet" href="src/styles/dashboard.css" />
-  <link rel="stylesheet" href="src/styles/dialogs.css" />
-  <link rel="stylesheet" href="src/styles/responsive.css" />
-  <link rel="stylesheet" href="src/styles/sidebar-nav.css" />
-  <link rel="stylesheet" href="src/styles/mobile-nav.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101b17" />
+    <meta name="description" content="Resumo da sua vida financeira no Orbe." />
+    <base href="../../../" />
+    <title>Visão geral | Orbe</title>
+    <link rel="stylesheet" href="src/styles/base.css" />
+    <link rel="stylesheet" href="src/styles/layout.css" />
+    <link rel="stylesheet" href="src/styles/components.css" />
+    <link rel="stylesheet" href="src/styles/dashboard.css" />
+    <link rel="stylesheet" href="src/styles/dialogs.css" />
+    <link rel="stylesheet" href="src/styles/responsive.css" />
+    <link rel="stylesheet" href="src/styles/sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/mobile-nav.css" />
 </head>
+
 <body data-standalone-dashboard="true">
-  <main id="dashboardRoot" aria-live="polite">
-    <div class="app-shell">
-        <aside class="sidebar" id="sidebar">
-            <button class="sidebar-expand" id="sidebarExpand" type="button" aria-label="Expandir navegação" aria-expanded="false" title="Abrir navegação">☰</button>
-            <a class="brand" href="#inicio"><img class="brand-mark" src="public/assets/icons/orbe.png" alt=""><span>orbe<span
-                        class="brand-dot">.</span><small>GESTÃO FINANCEIRA</small>
+    <main id="dashboardRoot" aria-live="polite">
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebar">
+                <button class="sidebar-expand" id="sidebarExpand" type="button" aria-label="Expandir navegação"
+                    aria-expanded="false" title="Abrir navegação">☰</button>
+                <a class="brand" href="#inicio"><img class="brand-mark" src="public/assets/icons/orbe.png"
+                        alt=""><span>orbe<span class="brand-dot">.</span><small>GESTÃO FINANCEIRA</small>
                         </small></span></a>
-            <div class="workspace-label">ESPAÇO DE TRABALHO</div>
-            <button class="workspace-switch"><span class="workspace-avatar">P</span><span><b>Meu espaço</b><small>Área
-                        pessoal</small></span><span class="chevrons">⌄</span></button>
-            <div class="nav-label">MENU PRINCIPAL</div>
-            <nav class="main-nav" aria-label="Navegação principal">
-                <a class="nav-link active" href="#inicio" data-page="inicio"><span>⌂</span> Visão geral</a>
-                <a class="nav-link" href="#movimentacoes" data-page="movimentacoes"><span>↕</span> Movimentações</a>
-                <a class="nav-link" href="#contas" data-page="contas"><span>▣</span> Contas e carteiras</a>
-                <a class="nav-link" href="#compromissos" data-page="compromissos"><span>◷</span> Compromissos</a>
-                <a class="nav-link" href="#cartoes" data-page="cartoes"><span>▤</span> Cartões</a>
-                <a class="nav-link" href="#dividas" data-page="dividas"><span>⌁</span> Empréstimos e dívidas</a>
-                <a class="nav-link" href="#metas" data-page="metas"><span>◎</span> Metas</a>
-                <a class="nav-link" href="#calendario" data-page="calendario"><span>▦</span> Calendário</a>
-                <a class="nav-link" href="#relatorios" data-page="relatorios"><span>▥</span> Relatórios</a>
-            </nav>
-            <div class="nav-label family-label">FAMÍLIA</div>
-            <a class="nav-link" href="#familia" data-page="familia"><span>♧</span> Espaço familiar</a>
-            <div class="sidebar-bottom">
-                <div class="help-card"><span class="help-icon">✳</span><b>Seu dinheiro, com direção.</b>
-                    <p>Pequenos passos constroem grandes planos.</p><a href="#metas">Conhecer minhas metas
-                        <span>→</span></a>
-                </div><a class="nav-link" href="#perfil" data-page="perfil"><span>◉</span> Meu perfil</a><a class="nav-link" href="#configuracoes" data-page="configuracoes"><span>⚙</span>
-                    Configurações</a>
-                <div class="profile">
-                    <div class="profile-avatar" id="profileInitials">JD</div><span><b id="profileName">Minha
-                            conta</b><small id="profileEmail">Conta pessoal</small></span><button id="signOut"
-                        type="button" aria-label="Sair da conta" title="Sair">Sair</button>
-                </div>
-            </div>
-        </aside>
-        <nav class="mobile-bottom-nav" aria-label="Navegação rápida">
-            <a class="mobile-nav-item active" href="#inicio" data-page="inicio"><span aria-hidden="true">⌂</span><small>Início</small></a>
-            <a class="mobile-nav-item" href="#movimentacoes" data-page="movimentacoes"><span aria-hidden="true">↕</span><small>Movimentos</small></a>
-            <a class="mobile-nav-item" href="#compromissos" data-page="compromissos"><span aria-hidden="true">◷</span><small>Contas</small></a>
-            <a class="mobile-nav-item" href="#perfil" data-page="perfil"><span aria-hidden="true">◉</span><small>Perfil</small></a>
-            <button class="mobile-nav-item" id="mobileMore" type="button" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true">☰</span><small>Menu</small></button>
-        </nav>
-        <main class="main-area">
-            <header class="topbar">
-                <div class="breadcrumb">Meu espaço <span>/</span> <b id="pageTitle">Visão geral</b></div>
-                <div class="top-actions"><button class="icon-button" aria-label="Pesquisar">⌕</button><button
-                        class="icon-button notification-button" aria-label="Notificações">♧<i></i></button>
-                    <a class="top-avatar" href="#perfil" data-page="perfil" aria-label="Abrir meu perfil">JD</a>
-                </div>
-            </header>
-            <div class="content">
-                <section class="page-heading">
-                    <div>
-                        <div class="eyebrow"><span class="live-dot"></span> SEGUNDA-FEIRA, 09 DE NOVEMBRO DE 2026</div>
-                        <h1 id="greeting">Olá <span>✳</span></h1>
-                        <p>Aqui está o resumo da sua vida financeira.</p>
+                <div class="workspace-label">ESPAÇO DE TRABALHO</div>
+                <button class="workspace-switch"><span class="workspace-avatar">P</span><span><b>Meu
+                            espaço</b><small>Área
+                            pessoal</small></span><span class="chevrons">⌄</span></button>
+                <div class="nav-label">MENU PRINCIPAL</div>
+                <nav class="main-nav" aria-label="Navegação principal">
+                    <a class="nav-link active" href="#inicio" data-page="inicio"><span>⌂</span> Visão geral</a>
+                    <a class="nav-link" href="#movimentacoes" data-page="movimentacoes"><span>↕</span> Movimentações</a>
+                    <a class="nav-link" href="#contas" data-page="contas"><span>▣</span> Contas e carteiras</a>
+                    <a class="nav-link" href="#compromissos" data-page="compromissos"><span>◷</span> Compromissos</a>
+                    <a class="nav-link" href="#cartoes" data-page="cartoes"><span>▤</span> Cartões</a>
+                    <a class="nav-link" href="#dividas" data-page="dividas"><span>⌁</span> Empréstimos e dívidas</a>
+                    <a class="nav-link" href="#metas" data-page="metas"><span>◎</span> Metas</a>
+                    <a class="nav-link" href="#calendario" data-page="calendario"><span>▦</span> Calendário</a>
+                    <a class="nav-link" href="#relatorios" data-page="relatorios"><span>▥</span> Relatórios</a>
+                </nav>
+                <div class="nav-label family-label">FAMÍLIA</div>
+                <a class="nav-link" href="#familia" data-page="familia"><span>♧</span> Espaço familiar</a>
+                <div class="sidebar-bottom">
+                    <div class="help-card"><span class="help-icon">✳</span><b>Seu dinheiro, com direção.</b>
+                        <p>Pequenos passos constroem grandes planos.</p><a href="#metas">Conhecer minhas metas
+                            <span>→</span></a>
+                    </div><a class="nav-link" href="#perfil" data-page="perfil"><span>◉</span> Meu perfil</a><a
+                        class="nav-link" href="#configuracoes" data-page="configuracoes"><span>⚙</span>
+                        Configurações</a>
+                    <div class="profile">
+                        <div class="profile-avatar" id="profileInitials">JD</div><span><b id="profileName">Minha
+                                conta</b><small id="profileEmail">Conta pessoal</small></span><button id="signOut"
+                            type="button" aria-label="Sair da conta" title="Sair">Sair</button>
                     </div>
-                    <div class="heading-actions"><button class="button button-quiet" id="periodButton">Este mês
-                            <span>⌄</span></button><button class="button button-primary"
-                            id="addTransaction"><span>＋</span> Nova movimentação</button></div>
-                </section>
-                <div class="demo-notice"><span>&#9432;</span> Resumo, movimentações e compromissos refletem seus dados no Firebase. Metas e depósitos também são salvos na sua conta.</div>
-                <section class="summary-grid" aria-label="Resumo financeiro">
-                    <article class="summary-card balance-card">
-                        <div class="card-top"><span>Saldo registrado</span><span class="card-symbol">◉</span></div>
-                        <div class="amount" id="balance">R$ 8.450,00</div>
-                        <div class="card-foot"><span class="trend positive">↗ 12,8%</span><span>em relação ao mês
-                                passado</span></div>
-                        <div class="balance-spark"><svg viewBox="0 0 300 55" preserveAspectRatio="none"
-                                aria-hidden="true">
-                                <path
-                                    d="M0 42 C28 38 30 45 52 32 S82 42 105 26 S137 36 156 18 S183 31 209 20 S241 27 260 8 S286 17 300 2" />
-                            </svg></div>
-                    </article>
-                    <article class="summary-card">
-                        <div class="card-top"><span>Receitas do mês</span><span class="soft-icon mint">↙</span></div>
-                        <div class="amount">R$ 12.800,00</div>
-                        <div class="card-foot"><span class="trend positive">↗ 8,2%</span><span>vs. mês anterior</span>
-                        </div>
-                        <div class="mini-bars income-bars">
-                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-                    </article>
-                    <article class="summary-card">
-                        <div class="card-top"><span>Despesas do mês</span><span class="soft-icon peach">↗</span></div>
-                        <div class="amount">R$ 4.350,00</div>
-                        <div class="card-foot"><span class="trend negative">↗ 3,1%</span><span>vs. mês anterior</span>
-                        </div>
-                        <div class="mini-bars expense-bars">
-                            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-                    </article>
-                    <article class="summary-card">
-                        <div class="card-top"><span>Contas pendentes</span><span class="soft-icon lilac">◷</span></div>
-                        <div class="amount">R$ 1.280,00</div>
-                        <div class="card-foot"><span class="pending-tag">3 contas</span><span>próximos 7 dias</span>
-                        </div>
-                        <div class="due-dots"><i></i><i></i><i></i><span>Próximo vencimento em 2 dias</span></div>
-                    </article>
-                </section>
-                <section class="dashboard-grid">
-                    <article class="panel cashflow-panel">
-                        <div class="panel-heading">
-                            <div>
-                                <h2>Fluxo financeiro</h2>
-                                <p>Acompanhe suas entradas e saídas</p>
-                            </div><button class="select-button" id="chartPeriod">Últimos 6 meses⌄</button>
-                        </div>
-                        <div class="chart-legend"><span><i class="legend-income"></i> Receitas</span><span><i
-                                    class="legend-expense"></i> Despesas</span><strong>Saldo positivo <b>R$
-                                    8.450</b></strong></div>
-                        <div class="chart-wrap">
-                            <div class="y-labels"><span>15 mil</span><span>10 mil</span><span>5 mil</span><span>0</span>
+                </div>
+            </aside>
+            <nav class="mobile-bottom-nav" aria-label="Navegação rápida">
+                <a class="mobile-nav-item active" href="#inicio" data-page="inicio"><span
+                        aria-hidden="true">⌂</span><small>Início</small></a>
+                <a class="mobile-nav-item" href="#movimentacoes" data-page="movimentacoes"><span
+                        aria-hidden="true">↕</span><small>Movimentos</small></a>
+                <a class="mobile-nav-item" href="#compromissos" data-page="compromissos"><span
+                        aria-hidden="true">◷</span><small>Contas</small></a>
+                <a class="mobile-nav-item" href="#perfil" data-page="perfil"><span
+                        aria-hidden="true">◉</span><small>Perfil</small></a>
+                <button class="mobile-nav-item" id="mobileMore" type="button" aria-controls="sidebar"
+                    aria-expanded="false"><span aria-hidden="true">☰</span><small>Menu</small></button>
+            </nav>
+            <main class="main-area">
+                <header class="topbar">
+                    <div class="breadcrumb">Meu espaço <span>/</span> <b id="pageTitle">Visão geral</b></div>
+                    <div class="top-actions"><button class="icon-button help-button" id="helpButton" type="button"
+                            aria-label="Ajuda do Orbe" title="Ajuda do Orbe">?</button><button
+                            class="icon-button notification-button" aria-label="Notificações">♧<i></i></button>
+                        <a class="top-avatar" href="#perfil" data-page="perfil" aria-label="Abrir meu perfil">JD</a>
+                    </div>
+                </header>
+                <div class="content">
+                    <section class="page-heading">
+                        <div>
+                            <div class="eyebrow"><span class="live-dot"></span> SEGUNDA-FEIRA, 09 DE NOVEMBRO DE 2026
                             </div>
-                            <div class="chart" role="img"
-                                aria-label="Gráfico de receitas e despesas dos últimos seis meses">
-                                <div class="grid-lines"><i></i><i></i><i></i><i></i></div>
-                                <div class="chart-columns">
-                                    <div class="month-bars"><i class="income" style="height:66%"></i><i class="expense"
-                                            style="height:33%"></i></div>
-                                    <div class="month-bars"><i class="income" style="height:78%"></i><i class="expense"
-                                            style="height:39%"></i></div>
-                                    <div class="month-bars"><i class="income" style="height:58%"></i><i class="expense"
-                                            style="height:29%"></i></div>
-                                    <div class="month-bars"><i class="income" style="height:88%"></i><i class="expense"
-                                            style="height:43%"></i></div>
-                                    <div class="month-bars"><i class="income" style="height:72%"></i><i class="expense"
-                                            style="height:36%"></i></div>
-                                    <div class="month-bars"><i class="income" style="height:96%"></i><i class="expense"
-                                            style="height:42%"></i></div>
+                            <h1 id="greeting">Olá</h1>
+                            <p>Aqui está o resumo da sua vida financeira.</p>
+                        </div>
+                        <div class="heading-actions"><button class="button button-quiet" id="periodButton">Este mês
+                                <span>⌄</span></button><button class="button button-primary"
+                                id="addTransaction"><span>＋</span> Nova movimentação</button></div>
+                    </section>
+                    <section class="summary-grid" aria-label="Resumo financeiro">
+                        <article class="summary-card balance-card">
+                            <div class="card-top"><span>Saldo registrado</span><span class="card-symbol">◉</span></div>
+                            <div class="amount" id="balance">R$ 8.450,00</div>
+                            <div class="card-foot"><span class="trend positive">↗ 12,8%</span><span>em relação ao mês
+                                    passado</span></div>
+                            <div class="balance-spark"><svg viewBox="0 0 300 55" preserveAspectRatio="none"
+                                    aria-hidden="true">
+                                    <path
+                                        d="M0 42 C28 38 30 45 52 32 S82 42 105 26 S137 36 156 18 S183 31 209 20 S241 27 260 8 S286 17 300 2" />
+                                </svg></div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="card-top"><span>Receitas do mês</span><span class="soft-icon mint">↙</span>
+                            </div>
+                            <div class="amount">R$ 12.800,00</div>
+                            <div class="card-foot"><span class="trend positive">↗ 8,2%</span><span>vs. mês
+                                    anterior</span>
+                            </div>
+                            <div class="mini-bars income-bars">
+                                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                            </div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="card-top"><span>Despesas do mês</span><span class="soft-icon peach">↗</span>
+                            </div>
+                            <div class="amount">R$ 4.350,00</div>
+                            <div class="card-foot"><span class="trend negative">↗ 3,1%</span><span>vs. mês
+                                    anterior</span>
+                            </div>
+                            <div class="mini-bars expense-bars">
+                                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                            </div>
+                        </article>
+                        <article class="summary-card">
+                            <div class="card-top"><span>Contas pendentes</span><span class="soft-icon lilac">◷</span>
+                            </div>
+                            <div class="amount">R$ 1.280,00</div>
+                            <div class="card-foot"><span class="pending-tag">3 contas</span><span>próximos 7 dias</span>
+                            </div>
+                            <div class="due-dots"><i></i><i></i><i></i><span>Próximo vencimento em 2 dias</span></div>
+                        </article>
+                    </section>
+                    <section class="dashboard-grid">
+                        <article class="panel cashflow-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Fluxo financeiro</h2>
+                                    <p>Acompanhe suas entradas e saídas</p>
+                                </div><button class="select-button" id="chartPeriod">Últimos 6 meses⌄</button>
+                            </div>
+                            <div class="chart-legend"><span><i class="legend-income"></i> Receitas</span><span><i
+                                        class="legend-expense"></i> Despesas</span><strong>Saldo positivo <b>R$
+                                        8.450</b></strong></div>
+                            <div class="chart-wrap">
+                                <div class="y-labels"><span>15 mil</span><span>10 mil</span><span>5
+                                        mil</span><span>0</span>
                                 </div>
-                                <div class="x-labels">
-                                    <span>Jun</span><span>Jul</span><span>Ago</span><span>Set</span><span>Out</span><span>Nov</span>
+                                <div class="chart" role="img"
+                                    aria-label="Gráfico de receitas e despesas dos últimos seis meses">
+                                    <div class="grid-lines"><i></i><i></i><i></i><i></i></div>
+                                    <div class="chart-columns">
+                                        <div class="month-bars"><i class="income" style="height:66%"></i><i
+                                                class="expense" style="height:33%"></i></div>
+                                        <div class="month-bars"><i class="income" style="height:78%"></i><i
+                                                class="expense" style="height:39%"></i></div>
+                                        <div class="month-bars"><i class="income" style="height:58%"></i><i
+                                                class="expense" style="height:29%"></i></div>
+                                        <div class="month-bars"><i class="income" style="height:88%"></i><i
+                                                class="expense" style="height:43%"></i></div>
+                                        <div class="month-bars"><i class="income" style="height:72%"></i><i
+                                                class="expense" style="height:36%"></i></div>
+                                        <div class="month-bars"><i class="income" style="height:96%"></i><i
+                                                class="expense" style="height:42%"></i></div>
+                                    </div>
+                                    <div class="x-labels">
+                                        <span>Jun</span><span>Jul</span><span>Ago</span><span>Set</span><span>Out</span><span>Nov</span>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="chart-caption"><span>Receitas e despesas registradas no período</span><a
+                                    href="#relatorios" data-page="relatorios">Ver relatório completo <b>→</b></a></div>
+                        </article>
+                        <article class="panel goals-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Suas metas</h2>
+                                    <p>Um passo de cada vez</p>
+                                </div><a class="text-link" href="#metas" data-page="metas">Ver todas <b>→</b></a>
+                            </div>
+                            <div id="dashboardGoals" aria-live="polite">
+                                <p class="goal-preview-empty">Carregando suas metas...</p>
+                            </div><button class="goal-add" id="addGoal">+ Criar nova meta</button>
+                        </article>
+                    </section>
+                    <section class="dashboard-grid lower-grid">
+                        <article class="panel transactions-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Movimentações recentes</h2>
+                                    <p>Suas últimas atividades financeiras</p>
+                                </div><a class="text-link" href="#movimentacoes" data-page="movimentacoes">Ver todas
+                                    <b>→</b></a>
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>DESCRIÇÃO</th>
+                                            <th>CATEGORIA</th>
+                                            <th>DATA</th>
+                                            <th>VALOR</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactionRows">
+                                        <tr>
+                                            <td colspan="4" class="empty-transactions">Carregando movimentações...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                        <article class="panel upcoming-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Compromissos reais</h2>
+                                    <p>Vencimentos gerados e confirmáveis</p>
+                                </div><button class="button button-quiet" id="addCommitment" type="button">＋
+                                    Novo</button>
+                            </div>
+                            <div id="commitmentList">
+                                <div class="empty-transactions">Carregando compromissos...</div>
+                            </div><a class="calendar-link" href="#compromissos" data-page="compromissos">Abrir checklist
+                                mensal</a>
+                        </article>
+                    </section>
+                    <footer class="footer"><span>© 2026 Orbe. Seu futuro, bem cuidado.</span><span>Feito para trazer
+                            clareza
+                        </span></footer>
+                </div>
+            </main>
+        </div>
+        <dialog id="transactionDialog" class="modal">
+            <form method="dialog" id="transactionForm">
+                <div class="modal-heading">
+                    <div><span class="eyebrow">REGISTRO FINANCEIRO</span>
+                        <h2>Nova movimentação</h2>
+                    </div><button class="icon-button close-modal" aria-label="Fechar">×</button>
+                </div><label>O que deseja registrar?<select name="type" required>
+                        <option value="expense">Saída da conta ou carteira</option>
+                        <option value="income">Entrada de dinheiro</option>
+                        <option value="card-purchase">Compra no cartão de crédito</option>
+                    </select></label><label>Descrição<input name="description" required maxlength="50"
+                        placeholder="Ex.: Conta de luz" /></label>
+                <div class="form-row"><label>Valor (R$)<input name="amount" required type="number" min="0.01"
+                            step="0.01" placeholder="0,00" /></label><label>Categoria<input name="category" required
+                            placeholder="Ex.: Moradia" /></label></div><label>Data<input name="date" type="date"
+                        required /></label><label id="transactionCardField" hidden>Cartão usado<select
+                        name="cardId"></select></label>
+                <div id="transactionInvoicePreview" class="transaction-invoice-preview" hidden></div>
+                <div class="modal-actions"><button class="button button-quiet close-modal"
+                        type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar
+                        movimentação</button></div>
+            </form>
+        </dialog>
+        <dialog id="commitmentDialog" class="modal">
+            <form method="dialog" id="commitmentForm">
+                <div class="modal-heading">
+                    <div><span class="eyebrow">COMPROMISSO FINANCEIRO</span>
+                        <h2>Novo compromisso</h2>
+                    </div><button class="icon-button commitment-close" type="button" aria-label="Fechar">×</button>
+                </div><label>Nome<input name="name" required maxlength="80"
+                        placeholder="Ex.: Conta de energia" /></label>
+                <div class="form-row"><label>Valor previsto (R$)<input name="amount" required type="number" min="0.01"
+                            step="0.01" /></label><label>Categoria<input name="category" required maxlength="40"
+                            placeholder="Moradia" /></label></div>
+                <div class="form-row"><label>Frequência<select name="frequency" required>
+                            <option value="once">Única</option>
+                            <option value="daily">Diária</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly" selected>Mensal</option>
+                            <option value="yearly">Anual</option>
+                        </select></label><label>Primeiro vencimento<input name="startDate" type="date"
+                            required /></label></div><label>Repetir até (opcional)<input name="endDate"
+                        type="date" /></label>
+                <p class="form-note">O sistema cria vencimentos e lembretes. Pagamentos só entram no histórico após sua
+                    confirmação.</p>
+                <div class="modal-actions"><button class="button button-quiet commitment-close"
+                        type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar
+                        compromisso</button></div>
+            </form>
+        </dialog>
+        <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle">
+            <div class="help-dialog-shell">
+                <header class="help-dialog-header">
+                    <div class="help-brand"><span class="help-brand-mark">?</span><span><small>GUIA DO
+                                ORBE</small><strong>Ajuda rápida</strong></span></div><button class="help-close"
+                        type="button" aria-label="Fechar ajuda">×</button>
+                </header>
+                <div class="help-dialog-content">
+                    <section class="help-hero">
+                        <div class="help-hero-copy"><span class="help-kicker">SEU DINHEIRO, MAIS CLARO</span>
+                            <h2 id="helpTitle">Entenda seu espaço financeiro</h2>
+                            <p>O Orbe organiza o que você recebeu, gastou, planeja pagar e quer conquistar. Você
+                                registra as informações e acompanha tudo em um só lugar.</p>
+                        </div><svg class="help-illustration" viewBox="0 0 300 210" role="img"
+                            aria-label="Painel ilustrado de saldo, receitas, despesas e uma meta">
+                            <defs>
+                                <linearGradient id="helpCard" x1="0" y1="0" x2="1" y2="1">
+                                    <stop stop-color="#fff" />
+                                    <stop offset="1" stop-color="#e2f2e6" />
+                                </linearGradient>
+                                <linearGradient id="helpBars" x1="0" y1="0" x2="0" y2="1">
+                                    <stop stop-color="#83d39a" />
+                                    <stop offset="1" stop-color="#268353" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="224" cy="58" r="47" fill="#ffffff18" />
+                            <rect x="47" y="26" width="208" height="152" rx="17" fill="url(#helpCard)" />
+                            <rect x="62" y="42" width="75" height="9" rx="4.5" fill="#b2c7b7" />
+                            <rect x="62" y="63" width="82" height="49" rx="9" fill="#174b32" /><text x="73" y="82"
+                                fill="#c5e5ce" font-size="7" font-family="Arial">SALDO ATUAL</text><text x="73" y="100"
+                                fill="#fff" font-size="14" font-weight="700" font-family="Arial">R$ 4.250</text>
+                            <rect x="151" y="63" width="88" height="23" rx="7" fill="#e8f5eb" />
+                            <circle cx="163" cy="74" r="4" fill="#2b925b" />
+                            <rect x="172" y="71" width="46" height="5" rx="2" fill="#8aa795" />
+                            <rect x="151" y="91" width="88" height="21" rx="7" fill="#fff0e9" />
+                            <circle cx="163" cy="101" r="4" fill="#d47759" />
+                            <rect x="172" y="98" width="37" height="5" rx="2" fill="#c7a99f" />
+                            <rect x="62" y="122" width="177" height="41" rx="9" fill="#f4f8f4" />
+                            <path d="M76 151v-11m20 11v-19m20 19v-14m20 14v-25m20 25v-18m20 18v-28m20 28v-22"
+                                stroke="url(#helpBars)" stroke-width="8" stroke-linecap="round" />
+                            <circle cx="242" cy="159" r="21" fill="#fff" />
+                            <circle cx="242" cy="159" r="14" fill="none" stroke="#dcebe0" stroke-width="5" />
+                            <path d="M242 145a14 14 0 1 1-12 21" fill="none" stroke="#43a96f" stroke-width="5"
+                                stroke-linecap="round" />
+                        </svg>
+                    </section>
+                    <section class="help-example">
+                        <div class="help-example-icon">↗</div>
+                        <div><span>NA PRÁTICA</span>
+                            <h3>Recebeu R$ 4.000 e pagou R$ 1.200?</h3>
+                            <p>Registre R$ 4.000 como receita e R$ 1.200 como despesa. A Visão geral atualiza o fluxo;
+                                compromissos ainda não pagos continuam apenas como previsão.</p>
                         </div>
-                        <div class="chart-caption"><span>Receitas e despesas registradas no período</span><a
-                                href="#relatorios" data-page="relatorios">Ver relatório completo <b>→</b></a></div>
-                    </article>
-                    <article class="panel goals-panel">
-                        <div class="panel-heading">
+                        <div class="help-example-flow"><b>+ R$ 4.000</b><i>− R$ 1.200</i><strong>= R$ 2.800</strong>
+                        </div>
+                    </section>
+                    <div class="help-section-title">
+                        <div><span>COMO CADA ÁREA FUNCIONA</span>
+                            <h3>Um guia curto para se localizar</h3>
+                        </div><small>Você controla os registros manualmente</small>
+                    </div>
+                    <section class="help-topic-grid">
+                        <article class="help-topic"><span class="help-topic-icon green">⌂</span>
                             <div>
-                                <h2>Suas metas</h2>
-                                <p>Um passo de cada vez</p>
-                            </div><a class="text-link" href="#metas" data-page="metas">Ver todas <b>→</b></a>
-                        </div>
-                        <div id="dashboardGoals" aria-live="polite"><p class="goal-preview-empty">Carregando suas metas...</p></div><button class="goal-add" id="addGoal">+ Criar nova meta</button>
-                    </article>
-                </section>
-                <section class="dashboard-grid lower-grid">
-                    <article class="panel transactions-panel">
-                        <div class="panel-heading">
+                                <h4>Visão geral</h4>
+                                <p>Saldo registrado, receitas e despesas confirmadas do mês, compromissos em aberto e
+                                    fluxo financeiro. Transferências entre contas não são receita nem despesa.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon blue">↕</span>
                             <div>
-                                <h2>Movimentações recentes</h2>
-                                <p>Suas últimas atividades financeiras</p>
-                            </div><a class="text-link" href="#movimentacoes" data-page="movimentacoes">Ver todas
-                                <b>→</b></a>
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>DESCRIÇÃO</th>
-                                        <th>CATEGORIA</th>
-                                        <th>DATA</th>
-                                        <th>VALOR</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="transactionRows">
-                                    <tr>
-                                        <td colspan="4" class="empty-transactions">Carregando movimentações...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </article>
-                    <article class="panel upcoming-panel"><div class="panel-heading"><div><h2>Compromissos reais</h2><p>Vencimentos gerados e confirmáveis</p></div><button class="button button-quiet" id="addCommitment" type="button">＋ Novo</button></div><div id="commitmentList"><div class="empty-transactions">Carregando compromissos...</div></div><a class="calendar-link" href="#compromissos" data-page="compromissos">Abrir checklist mensal</a></article>
-                </section>
-                <footer class="footer"><span>© 2026 Orbe. Seu futuro, bem cuidado.</span><span>Feito para trazer clareza
-                        <b>✳</b></span></footer>
+                                <h4>Movimentações</h4>
+                                <p>Registre entradas e saídas. Exemplo: salário como receita e mercado como despesa. Só
+                                    lançamentos confirmados entram nos totais.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon violet">▣</span>
+                            <div>
+                                <h4>Contas e carteiras</h4>
+                                <p>Organize saldos por conta e transfira entre elas. O Orbe não se conecta
+                                    automaticamente ao banco; você informa os dados.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon amber">◷</span>
+                            <div>
+                                <h4>Compromissos</h4>
+                                <p>Cadastre contas previstas e recorrências. Só viram despesa no histórico quando você
+                                    confirma o pagamento.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon green">◎</span>
+                            <div>
+                                <h4>Metas</h4>
+                                <p>Defina um alvo, planeje um aporte mensal opcional e registre depósitos. A previsão
+                                    usa seu ritmo; depósitos não movimentam contas automaticamente.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon blue">▤</span>
+                            <div>
+                                <h4>Cartões</h4>
+                                <p>Cadastre limite, fechamento e vencimento, registre compras e consulte faturas. Ao
+                                    pagar, o total vira uma única despesa. Controle manual, sem conexão bancária.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic help-topic-soon"><span class="help-topic-icon gray">⌁</span>
+                            <div>
+                                <h4>Empréstimos e dívidas</h4>
+                                <p>Área planejada para registrar valores devidos, parcelas e acompanhar a quitação.</p>
+                            </div><span class="help-coming-soon">EM PREPARAÇÃO</span>
+                        </article>
+                        <article class="help-topic help-topic-soon"><span class="help-topic-icon gray">▦</span>
+                            <div>
+                                <h4>Calendário e relatórios</h4>
+                                <p>Vão reunir vencimentos por data e análises completas dos seus registros.</p>
+                            </div><span class="help-coming-soon">EM PREPARAÇÃO</span>
+                        </article>
+                        <article class="help-topic"><span class="help-topic-icon blue">◉</span>
+                            <div>
+                                <h4>Perfil e configurações</h4>
+                                <p>Atualize seus dados, moeda, fuso horário e preferências da conta.</p>
+                            </div>
+                        </article>
+                        <article class="help-topic help-topic-soon"><span class="help-topic-icon gray">♧</span>
+                            <div>
+                                <h4>Espaço familiar</h4>
+                                <p>Área planejada para organizar finanças compartilhadas.</p>
+                            </div><span class="help-coming-soon">EM PREPARAÇÃO</span>
+                        </article>
+                    </section>
+                    <footer class="help-future"><span>✦</span>
+                        <p><strong>Em breve, um espaço para tirar dúvidas.</strong><br>Este guia é o primeiro passo;
+                            futuramente poderá ajudar você a encontrar respostas sobre cada função do Orbe.</p>
+                    </footer>
+                </div>
             </div>
-        </main>
-    </div>
-    <dialog id="transactionDialog" class="modal">
-        <form method="dialog" id="transactionForm">
-            <div class="modal-heading">
-                <div><span class="eyebrow">REGISTRO FINANCEIRO</span>
-                    <h2>Nova movimentação</h2>
-                </div><button class="icon-button close-modal" aria-label="Fechar">×</button>
-            </div><label>Tipo<select name="type" required>
-                    <option value="expense">Despesa</option>
-                    <option value="income">Receita</option>
-                </select></label><label>Descrição<input name="description" required maxlength="50"
-                    placeholder="Ex.: Conta de luz" /></label>
-            <div class="form-row"><label>Valor (R$)<input name="amount" required type="number" min="0.01" step="0.01"
-                        placeholder="0,00" /></label><label>Categoria<input name="category" required
-                        placeholder="Ex.: Moradia" /></label></div><label>Data<input name="date" type="date"
-                    required /></label>
-            <p class="form-note">Esta movimentação será salva na sua conta Firebase.</p>
-            <div class="modal-actions"><button class="button button-quiet close-modal"
-                    type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar
-                    movimentação</button></div>
-        </form>
-    </dialog>
-    <dialog id="commitmentDialog" class="modal"><form method="dialog" id="commitmentForm"><div class="modal-heading"><div><span class="eyebrow">COMPROMISSO FINANCEIRO</span><h2>Novo compromisso</h2></div><button class="icon-button commitment-close" type="button" aria-label="Fechar">×</button></div><label>Nome<input name="name" required maxlength="80" placeholder="Ex.: Conta de energia" /></label><div class="form-row"><label>Valor previsto (R$)<input name="amount" required type="number" min="0.01" step="0.01" /></label><label>Categoria<input name="category" required maxlength="40" placeholder="Moradia" /></label></div><div class="form-row"><label>Frequência<select name="frequency" required><option value="once">Única</option><option value="daily">Diária</option><option value="weekly">Semanal</option><option value="monthly" selected>Mensal</option><option value="yearly">Anual</option></select></label><label>Primeiro vencimento<input name="startDate" type="date" required /></label></div><label>Repetir até (opcional)<input name="endDate" type="date" /></label><p class="form-note">O sistema cria vencimentos e lembretes. Pagamentos só entram no histórico após sua confirmação.</p><div class="modal-actions"><button class="button button-quiet commitment-close" type="button">Cancelar</button><button class="button button-primary" type="submit">Salvar compromisso</button></div></form></dialog>  <div class="toast" id="toast" role="status"></div>
-  </main>
-  <script type="module">
-    import { firebaseReady, observeAuth } from "src/services/firebase/firebase.js";
-    import { mountDashboardPage } from "src/pages/dashboard/dashboard.js";
+        </dialog>
+        <div class="toast" id="toast" role="status"></div>
+    </main>
+    <script type="module">
+        import { firebaseReady, observeAuth } from "src/services/firebase/firebase.js";
+        import { mountDashboardPage } from "src/pages/dashboard/dashboard.js";
 
-    const root = document.querySelector("#dashboardRoot");
+        const root = document.querySelector("#dashboardRoot");
 
-    function showMessage(message) {
-      const paragraph = document.createElement("p");
-      paragraph.setAttribute("role", "status");
-      paragraph.textContent = message;
-      root.replaceChildren(paragraph);
-    }
-
-    if (!firebaseReady) {
-      showMessage("O Firebase não está configurado. Configure src/services/firebase/firebase-config.local.js para abrir o painel.");
-    } else {
-      observeAuth(async (user) => {
-        if (!user) {
-          window.location.assign("src/pages/login/index.html");
-          return;
+        function showMessage(message) {
+            const paragraph = document.createElement("p");
+            paragraph.setAttribute("role", "status");
+            paragraph.textContent = message;
+            root.replaceChildren(paragraph);
         }
 
-        try {
-          await mountDashboardPage(user);
-        } catch (error) {
-          showMessage(error.message || "Não foi possível abrir o painel.");
+        if (!firebaseReady) {
+            showMessage("O Firebase não está configurado. Configure src/services/firebase/firebase-config.local.js para abrir o painel.");
+        } else {
+            observeAuth(async (user) => {
+                if (!user) {
+                    window.location.assign("src/pages/login/index.html");
+                    return;
+                }
+
+                try {
+                    await mountDashboardPage(user);
+                } catch (error) {
+                    showMessage(error.message || "Não foi possível abrir o painel.");
+                }
+            });
         }
-      });
-    }
-  </script>
+    </script>
 </body>
+
 </html>

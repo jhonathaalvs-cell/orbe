@@ -157,7 +157,7 @@
 .delete-goal-dialog .modal-heading h2 { color: #3a342f; }
 .delete-goal-dialog .modal-actions { margin-top: 20px; padding-top: 15px; border-top: 1px solid #f0e9e7; }
 @media (max-width: 560px) {
-  .analysis-hero { margin: -15px -12px 14px; padding: 16px 13px; }
+  .analysis-hero { margin: 0 -12px 14px; padding: 16px 13px; }
   .analysis-actions { gap: 5px; }
   .analysis-delete, .analysis-edit { padding: 7px 8px; font-size: 9px; }
   .analysis-progress-label strong { font-size: 21px; }
@@ -168,3 +168,15 @@
   .goal-progress i, .deposit-chart-track i { animation: none; }
   .goal-card:hover { transform: none; }
 }
+.goals-list-column { grid-column: 1 / -1; }
+.goals-list { grid-template-columns: repeat(auto-fill, minmax(265px, 1fr)); align-items: start; }
+.goal-analysis { display: none; }
+.goals-page.goal-detail-open .goals-list-column { display: none; }
+.goals-page.goal-detail-open .goal-analysis { display: block; grid-column: 1 / -1; }
+.goal-back-button { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 12px; padding: 7px 11px; border: 1px solid #e2ebe4; border-radius: 9px; background: #fff; color: #387554; font: 600 10px Manrope, sans-serif; cursor: pointer; transition: background .16s ease, transform .16s ease; }
+.analysis-hero { margin-top: 0; }
+.goal-back-button:hover { transform: translateX(-2px); background: #f1f8f3; }
+.goal-back-button span { font-size: 15px; }
+@media(max-width: 900px) { .goals-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media(max-width: 560px) { .goals-list { grid-template-columns: 1fr; } }
+@media(prefers-reduced-motion: reduce) { .goal-back-button:hover { transform: none; } }

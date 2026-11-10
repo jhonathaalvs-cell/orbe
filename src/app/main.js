@@ -10,6 +10,7 @@ const pageStyles = {
   accounts: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "accounts.css"],
   commitments: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "commitments.css"],
   goals: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "goals.css"],
+  cards: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "cards.css"],
 };
 const pageStyleLoads = new WeakMap();
 
@@ -214,6 +215,30 @@ async function showGoals(user) {
   }
 }
 
+async function showCards(user) {
+  if (!user) return showLogin();
+  const version = ++renderVersion;
+  appRoot.setAttribute("aria-busy", "true");
+  try {
+    if (!await loadPageStyles("cards", version)) return;
+    const response = await fetch("src/pages/cartoes/index.html");
+    if (!response.ok) throw new Error("NÃ£o foi possÃ­vel carregar seus cartÃµes.");
+    const content = appRoot.querySelector(".content");
+    if (!content) return showDashboard(user);
+    content.innerHTML = await response.text();
+    document.querySelector("#pageTitle").textContent = "Cartões";
+    const { mountCardsPage } = await import("../pages/cartoes/cards.js");
+    if (version === renderVersion) mountCardsPage(user);
+  } catch (error) {
+    if (version === renderVersion) {
+      const content = appRoot.querySelector(".content");
+      if (content) content.innerHTML = `<section class="page-load-error"><h1>NÃ£o foi possível abrir seus cartões</h1><p>${error.message}</p></section>`;
+    }
+  } finally {
+    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
+  }
+}
+
 appRoot.addEventListener("click", (event) => {
   const link = event.target.closest("[data-page]");
   if (!link) return;
@@ -239,6 +264,7 @@ appRoot.addEventListener("click", (event) => {
   if (page === "contas") return showAccounts(currentUser);
   if (page === "compromissos") return showCommitments(currentUser);
   if (page === "metas") return showGoals(currentUser);
+  if (page === "cartoes") return showCards(currentUser);
   if (page === "inicio") return showDashboard(currentUser);
   if (page === "movimentacoes") {
     const selector = ".transactions-panel";
@@ -259,6 +285,7 @@ window.addEventListener("orbe:navigate", (event) => {
   if (event.detail?.page === "perfil") showProfile(currentUser);
   if (event.detail?.page === "compromissos") showCommitments(currentUser);
   if (event.detail?.page === "metas") showGoals(currentUser);
+  if (event.detail?.page === "cartoes") showCards(currentUser);
 });
 
 if (firebaseReady) {

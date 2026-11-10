@@ -6,6 +6,7 @@ import {
   getCommitments,
   getNotifications,
   getAccounts,
+  getCreditCards,
   getGoals,
   getTransfers,
   getTransactions,
@@ -13,6 +14,7 @@ import {
   logOut,
   markNotificationRead,
   saveTransaction,
+  addCreditCardPurchase,
 } from "../../services/firebase/firebase.js";
 
 let dialog;
@@ -26,6 +28,7 @@ let currentTransactions = [];
 let currentCommitments = [];
 let currentOccurrences = [];
 let currentAccounts = [];
+let currentCreditCards = [];
 let currentTransfers = [];
 let toastTimer;
 
@@ -80,14 +83,18 @@ async function loadDashboard(user) {
     const occurrences = await getCommitmentOccurrences(user.uid, commitments);
     let goals = [];
     try { goals = await getGoals(user.uid); } catch { /* Visão geral permanece disponível se as regras de metas ainda não foram publicadas. */ }
+    let creditCards = [];
+    try { creditCards = await getCreditCards(user.uid); } catch { /* O dashboard segue disponível se as regras de cartões ainda não foram publicadas. */ }
     if (activeUser?.uid !== user.uid) return;
     currentTransactions = transactions;
     currentCommitments = commitments;
     currentAccounts = accounts;
+    currentCreditCards = creditCards;
     currentTransfers = transfers;
     currentOccurrences = occurrences;
     renderTransactions(transactions);
     renderTransactionAccountOptions(accounts);
+    renderTransactionCardOptions(creditCards);
     renderFinanceSummary(transactions, occurrences, accounts);
     renderCommitments(occurrences);
     renderGoalPreview(goals);
@@ -118,6 +125,7 @@ function renderTransactionAccountOptions(accounts) {
   let select = form.elements.accountId;
   if (!select) {
     const label = document.createElement('label');
+    label.id = 'transactionAccountField';
     label.innerHTML = 'Conta ou carteira<select name="accountId"></select>';
     select = label.querySelector('select');
     form.querySelector('.form-note').before(label);
@@ -131,8 +139,94 @@ function renderTransactionAccountOptions(accounts) {
     const selected = active.find(account => account.id === select.value);
     form.elements.date.min = selected?.openingDate || '';
   };
+  updateTransactionMode();
 }
 
+function renderTransactionCardOptions(cards) {
+  const select = form.elements.cardId;
+  if (!select) return;
+  if (!form.elements.installmentCount) {
+    const label = document.createElement('label');
+    label.id = 'transactionInstallmentField';
+    label.innerHTML = 'Parcelamento<select name="installmentCount"><option value="1">À vista (1x)</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option><option value="4">4 parcelas</option><option value="5">5 parcelas</option><option value="6">6 parcelas</option><option value="10">10 parcelas</option></select>';
+    document.querySelector('#transactionInvoicePreview').before(label);
+  }
+  const active = cards.filter(card => card.active);
+  select.innerHTML = active.length
+    ? `<option value="">Selecione um cartão</option>${active.map(card => `<option value="${escapeHtml(card.id)}">${escapeHtml(card.name)} · ${escapeHtml(card.brand || 'Cartão')}${card.lastFour ? ` · final ${escapeHtml(card.lastFour)}` : ''}</option>`).join('')}`
+    : '<option value="">Nenhum cartão ativo cadastrado</option>';
+  updateTransactionMode();
+}
+
+function updateTransactionMode() {
+  if (!form?.elements.type) return;
+  const isCardPurchase = form.elements.type.value === 'card-purchase';
+  const accountField = document.querySelector('#transactionAccountField');
+  const cardField = document.querySelector('#transactionCardField');
+  const installmentField = document.querySelector('#transactionInstallmentField');
+  const preview = document.querySelector('#transactionInvoicePreview');
+  if (accountField) accountField.hidden = isCardPurchase;
+  if (cardField) cardField.hidden = !isCardPurchase;
+  if (installmentField) installmentField.hidden = !isCardPurchase;
+  if (preview) preview.hidden = !isCardPurchase;
+  if (form.elements.accountId) form.elements.accountId.required = !isCardPurchase && currentAccounts.some(account => account.active);
+  if (form.elements.cardId) form.elements.cardId.required = isCardPurchase;
+  updateTransactionInvoicePreview();
+}
+
+function invoiceMonthFor(date, closingDay) {
+  const [year, month, day] = date.split('-').map(Number);
+  const invoiceDate = new Date(year, month - 1 + (day > closingDay ? 1 : 0), 1);
+  return `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function invoiceDueDate(invoiceMonth, closingDay, dueDay) {
+  const [year, month] = invoiceMonth.split('-').map(Number);
+  const dueMonth = new Date(year, month - 1 + (dueDay <= closingDay ? 1 : 0), 1);
+  return `${dueMonth.getFullYear()}-${String(dueMonth.getMonth() + 1).padStart(2, '0')}-${String(dueDay).padStart(2, '0')}`;
+}
+
+function buildInstallments(total, date, card, count) {
+  const firstMonth = invoiceMonthFor(date, card.closingDay);
+  const totalCents = Math.round(total * 100);
+  const base = Math.floor(totalCents / count);
+  const extraCents = totalCents % count;
+  const [year, month] = firstMonth.split('-').map(Number);
+  return Array.from({ length: count }, (_, index) => {
+    const invoiceDate = new Date(year, month - 1 + index, 1);
+    const invoiceMonth = `${invoiceDate.getFullYear()}-${String(invoiceDate.getMonth() + 1).padStart(2, '0')}`;
+    return {
+      amount: (base + (index < extraCents ? 1 : 0)) / 100,
+      date,
+      invoiceMonth,
+      dueDate: invoiceDueDate(invoiceMonth, card.closingDay, card.dueDay),
+      ...(count > 1 ? { installmentNumber: index + 1, installmentCount: count } : {}),
+    };
+  });
+}
+
+function updateTransactionInvoicePreview() {
+  const preview = document.querySelector('#transactionInvoicePreview');
+  const date = form?.elements.date?.value;
+  const amount = Number(form?.elements.amount?.value || 0);
+  const count = Number(form?.elements.installmentCount?.value || 1);
+  const card = currentCreditCards.find(item => item.id === form?.elements.cardId?.value && item.active);
+  if (!preview || !card || !date) {
+    if (preview) preview.textContent = currentCreditCards.some(item => item.active)
+      ? 'Escolha um cartao para ver a previsao da fatura.'
+      : 'Cadastre um cartao de credito na area Cartoes para registrar compras por aqui.';
+    return;
+  }
+  const installments = buildInstallments(amount, date, card, count);
+  const first = installments[0];
+  const last = installments.at(-1);
+  if (count > 1) {
+    preview.innerHTML = `Compra parcelada em <strong>${count}x de ${money.format(first.amount)}</strong>. Primeira parcela na fatura de <strong>${escapeHtml(monthName(first.invoiceMonth))}</strong> e ultima na de <strong>${escapeHtml(monthName(last.invoiceMonth))}</strong>. O saldo da conta nao muda agora.`;
+  } else {
+    const dueDate = invoiceDueDate(first.invoiceMonth, card.closingDay, card.dueDay);
+    preview.innerHTML = `Vai para a fatura de <strong>${escapeHtml(monthName(first.invoiceMonth))}</strong>, com vencimento em <strong>${new Date(`${dueDate}T12:00:00`).toLocaleDateString('pt-BR')}</strong>. O saldo da conta nao muda agora.`;
+  }
+}
 async function refreshNotificationIndicator(user) {
   try {
     const notifications = await getNotifications(user.uid);
@@ -315,6 +409,7 @@ document.querySelector('#signOut').addEventListener('click', async () => {
 document.querySelector('#addTransaction').addEventListener('click', () => {
   if (!activeUser) return showToast('Entre na sua conta para registrar movimentações.');
   form.reset();
+  form.elements.type.value = 'expense';
   form.elements.date.value = todayKey();
   form.elements.date.max = todayKey();
   const firstAccount = currentAccounts.find(account => account.active);
@@ -324,20 +419,67 @@ document.querySelector('#addTransaction').addEventListener('click', () => {
   } else {
     form.elements.date.min = '';
   }
+  const firstCard = currentCreditCards.find(card => card.active);
+  if (firstCard) form.elements.cardId.value = firstCard.id;
+  updateTransactionMode();
   dialog.showModal();
 });
 document.querySelectorAll('.close-modal').forEach(button => button.addEventListener('click', () => dialog.close()));
+form.elements.type.addEventListener('change', updateTransactionMode);
+form.elements.cardId.addEventListener('change', updateTransactionInvoicePreview);
+form.elements.date.addEventListener('change', updateTransactionInvoicePreview);
+form.addEventListener('input', event => {
+  if (['amount', 'installmentCount'].includes(event.target.name)) updateTransactionInvoicePreview();
+});
+form.addEventListener('change', event => {
+  if (event.target.name === 'installmentCount') updateTransactionInvoicePreview();
+});
 form.addEventListener('submit', async event => {
   event.preventDefault();
   if (!activeUser) return showToast('Entre na sua conta para registrar movimentações.');
   const data = new FormData(form);
+  const movementType = String(data.get('type'));
   const transaction = {
-    type: String(data.get('type')),
+    type: movementType === 'income' ? 'income' : 'expense',
     description: String(data.get('description')).trim(),
     amount: Number(data.get('amount')),
     category: String(data.get('category')).trim(),
     date: String(data.get('date')),
   };
+  if (movementType === 'card-purchase') {
+    const card = currentCreditCards.find(item => item.id === String(data.get('cardId')) && item.active);
+    if (!card) return showToast('Selecione um cartão ativo para registrar a compra.');
+    if (!transaction.description || !transaction.category || !Number.isFinite(transaction.amount) || transaction.amount <= 0 || !transaction.date || transaction.date > todayKey()) return showToast('Confira os dados e registre somente compras já realizadas.');
+    const installmentCount = Number(data.get('installmentCount') || 1);
+    if (!Number.isInteger(installmentCount) || installmentCount < 1 || installmentCount > 10) return showToast('Escolha um parcelamento entre 1 e 10 vezes.');
+    const installments = buildInstallments(transaction.amount, transaction.date, card, installmentCount).map(item => ({
+      ...item,
+      description: transaction.description,
+      category: transaction.category,
+    }));
+    const invoiceMonth = installments[0].invoiceMonth;
+    const purchase = {
+      description: transaction.description,
+      category: transaction.category,
+      amount: transaction.amount,
+      date: transaction.date,
+      invoiceMonth,
+      dueDate: installments[0].dueDate,
+      installments,
+    };    const saveButton = form.querySelector('[type="submit"]');
+    saveButton.disabled = true;
+    try {
+      await addCreditCardPurchase(activeUser.uid, card, purchase);
+      await loadDashboard(activeUser);
+      dialog.close();
+      showToast(installmentCount > 1 ? `Compra parcelada registrada em ${installmentCount} faturas.` : `Compra registrada na fatura de ${monthName(invoiceMonth)}.`);
+    } catch (error) {
+      showToast(firebaseErrorMessage(error));
+    } finally {
+      saveButton.disabled = false;
+    }
+    return;
+  }
   const accountId = String(data.get('accountId') || '');
   if (accountId) transaction.accountId = accountId;
   if (currentAccounts.some(account => account.active) && !currentAccounts.some(account => account.id === accountId && account.active)) return showToast('Selecione uma conta ou carteira ativa.');
@@ -425,6 +567,13 @@ document.querySelector('#commitmentList').addEventListener('click', async event 
   } catch (error) {
     showToast(error.message?.startsWith('Esta conta') ? error.message : firebaseErrorMessage(error));
   }
+});
+
+const helpDialog = document.querySelector('#helpDialog');
+document.querySelector('#helpButton').addEventListener('click', () => helpDialog.showModal());
+helpDialog.querySelector('.help-close').addEventListener('click', () => helpDialog.close());
+helpDialog.addEventListener('click', event => {
+  if (event.target === helpDialog) helpDialog.close();
 });
 
 document.querySelector('.notification-button').addEventListener('click', async () => {

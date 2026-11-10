@@ -48,6 +48,7 @@ function renderList() {
   const active = goals.filter((goal) => goal.active !== false);
   const list = document.querySelector("#goalsList");
   if (!active.length) {
+    document.querySelector("#goalsRoot").classList.remove("goal-detail-open");
     list.innerHTML = '<div class="panel goal-empty-list"><span>◎</span><h3>Sua primeira meta começa aqui</h3><p>Crie um objetivo e acompanhe cada depósito até chegar lá.</p><button class="button button-primary" data-action="new">Criar minha primeira meta</button></div>';
     document.querySelector("#goalAnalysis").innerHTML = '<div class="goal-analysis-empty"><span>◎</span><h2>Escolha uma meta</h2><p>Selecione uma meta para ver depósitos, mudanças de objetivo e previsões.</p></div>';
     return;
@@ -87,11 +88,12 @@ function renderAnalysis() {
     return `<div><span>Concluir ${monthsEarlier} meses antes</span><strong>${money.format(required)} / mês</strong><small>Faltam ${stats.monthsToGoal - monthsEarlier} meses nesse ritmo</small></div>`;
   }).join("");
   const targetHistory = [...(goal.targetHistory || [])].reverse().map((entry) => `<li><span>${new Date(`${entry.date}T12:00:00`).toLocaleDateString("pt-BR")}</span><strong>${money.format(entry.amount)}</strong></li>`).join("");
-  panel.innerHTML = `<div class="analysis-hero"><div class="analysis-heading"><div><span class="eyebrow">ANÁLISE INDIVIDUAL</span><h2>${escapeHtml(goal.name)}</h2><p>Objetivo atual: ${money.format(goal.targetAmount)}</p></div><div class="analysis-actions"><button type="button" class="analysis-edit" data-action="edit">Editar</button><button type="button" class="analysis-delete" data-action="delete"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2m3 0-.7 10H5.7L5 6m3 2v5m4-5v5"/></svg>Excluir</button></div></div><div class="analysis-progress"><div class="analysis-progress-label"><strong>${money.format(stats.saved)}</strong><span>${money.format(stats.remaining)} restantes</span></div><div class="goal-progress"><i style="width:${stats.progress}%"></i></div><small>${stats.progress.toFixed(1)}% do objetivo alcançado</small></div></div><div class="forecast-grid">${pace}<div class="forecast-early"><h3>Para chegar antes</h3>${early}</div></div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Aportes ao longo do tempo</h3><p>Total depositado por mês</p></div></div>${months.length ? `<div class="deposit-chart">${chartMonths.map(({ key, value }) => `<div class="deposit-chart-column" title="${monthLabel(key)}: ${money.format(value)}"><div class="deposit-chart-track"><i style="height:${value ? Math.max(8, value / chartMax * 100) : 0}%"></i></div><span>${monthLabel(key, { month: "short" }).replace(".", "")}</span><strong>${value ? money.format(value) : "—"}</strong></div>`).join("")}</div>` : '<p class="analysis-empty-note">Ainda não há depósitos registrados.</p>'}</div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Histórico do valor alvo</h3><p>Veja quando e quanto o objetivo mudou</p></div></div>${targetHistory ? `<ul class="target-history">${targetHistory}</ul>` : '<p class="analysis-empty-note">O valor inicial continua sendo o alvo atual.</p>'}</div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Depósitos recentes</h3><p>Valores adicionados à meta</p></div><button type="button" class="analysis-deposit" data-action="deposit">＋ Depósito</button></div>${deposits.length ? `<div class="deposit-history">${deposits.slice(0, 8).map((item) => `<div><span class="deposit-history-icon">↗</span><span><strong>${money.format(item.amount)}</strong><small>${new Date(`${item.date}T12:00:00`).toLocaleDateString("pt-BR")}${item.note ? ` · ${escapeHtml(item.note)}` : ""}</small></span></div>`).join("")}</div>` : '<p class="analysis-empty-note">Seus depósitos aparecerão aqui.</p>'}</div>`;
+  panel.innerHTML = `<button class="goal-back-button" type="button" data-action="back"><span aria-hidden="true">←</span> Todas as metas</button><div class="analysis-hero"><div class="analysis-heading"><div><span class="eyebrow">ANÁLISE INDIVIDUAL</span><h2>${escapeHtml(goal.name)}</h2><p>Objetivo atual: ${money.format(goal.targetAmount)}</p></div><div class="analysis-actions"><button type="button" class="analysis-edit" data-action="edit">Editar</button><button type="button" class="analysis-delete" data-action="delete"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M8 6V4h4v2m3 0-.7 10H5.7L5 6m3 2v5m4-5v5"/></svg>Excluir</button></div></div><div class="analysis-progress"><div class="analysis-progress-label"><strong>${money.format(stats.saved)}</strong><span>${money.format(stats.remaining)} restantes</span></div><div class="goal-progress"><i style="width:${stats.progress}%"></i></div><small>${stats.progress.toFixed(1)}% do objetivo alcançado</small></div></div><div class="forecast-grid">${pace}<div class="forecast-early"><h3>Para chegar antes</h3>${early}</div></div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Aportes ao longo do tempo</h3><p>Total depositado por mês</p></div></div>${months.length ? `<div class="deposit-chart">${chartMonths.map(({ key, value }) => `<div class="deposit-chart-column" title="${monthLabel(key)}: ${money.format(value)}"><div class="deposit-chart-track"><i style="height:${value ? Math.max(8, value / chartMax * 100) : 0}%"></i></div><span>${monthLabel(key, { month: "short" }).replace(".", "")}</span><strong>${value ? money.format(value) : "—"}</strong></div>`).join("")}</div>` : '<p class="analysis-empty-note">Ainda não há depósitos registrados.</p>'}</div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Histórico do valor alvo</h3><p>Veja quando e quanto o objetivo mudou</p></div></div>${targetHistory ? `<ul class="target-history">${targetHistory}</ul>` : '<p class="analysis-empty-note">O valor inicial continua sendo o alvo atual.</p>'}</div><div class="analysis-section"><div class="analysis-section-heading"><div><h3>Depósitos recentes</h3><p>Valores adicionados à meta</p></div><button type="button" class="analysis-deposit" data-action="deposit">＋ Depósito</button></div>${deposits.length ? `<div class="deposit-history">${deposits.slice(0, 8).map((item) => `<div><span class="deposit-history-icon">↗</span><span><strong>${money.format(item.amount)}</strong><small>${new Date(`${item.date}T12:00:00`).toLocaleDateString("pt-BR")}${item.note ? ` · ${escapeHtml(item.note)}` : ""}</small></span></div>`).join("")}</div>` : '<p class="analysis-empty-note">Seus depósitos aparecerão aqui.</p>'}</div>`;
 }
 
 function selectGoal(goalId) {
-  if (goalId === selectedGoalId) return;
+  if (goalId === selectedGoalId && document.querySelector("#goalsRoot").classList.contains("goal-detail-open")) return;
+  document.querySelector("#goalsRoot").classList.add("goal-detail-open");
   const panel = document.querySelector("#goalAnalysis");
   const transitionId = ++analysisTransition;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -186,7 +188,11 @@ export function mountGoalsPage(activeUser) {
     button.disabled = true;
     try {
       if (editingGoalId) await updateGoal(user.uid, editingGoalId, { name, targetAmount, monthlyContribution, updatedDate: date });
-      else await createGoal(user.uid, { name, targetAmount, monthlyContribution, createdDate: date, targetDate: null });
+      else {
+        await createGoal(user.uid, { name, targetAmount, monthlyContribution, createdDate: date, targetDate: null });
+        selectedGoalId = null;
+        document.querySelector("#goalsRoot").classList.remove("goal-detail-open");
+      }
       await reload();
       goalDialog.close();
       showToast(editingGoalId ? "Meta atualizada." : "Meta criada.");
@@ -224,6 +230,7 @@ export function mountGoalsPage(activeUser) {
     try {
       await deleteGoal(user.uid, deleteDialog.dataset.goalId);
       selectedGoalId = null;
+      document.querySelector("#goalsRoot").classList.remove("goal-detail-open");
       await reload();
       deleteDialog.close();
       showToast("Meta e depósitos excluídos.");
@@ -241,6 +248,10 @@ export function mountGoalsPage(activeUser) {
     const goal = goals.find((item) => item.id === (card?.dataset.goal || selectedGoalId));
     if (button.dataset.action === "new") return document.querySelector("#createGoal").click();
     if (!goal) return;
+    if (button.dataset.action === "back") {
+      document.querySelector("#goalsRoot").classList.remove("goal-detail-open");
+      return document.querySelector("#goalsListColumn").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
     if (button.dataset.action === "select") return selectGoal(goal.id);
     if (button.dataset.action === "deposit") return openDeposit(goal);
     if (button.dataset.action === "edit") return openEdit(goal);

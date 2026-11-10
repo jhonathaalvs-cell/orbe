@@ -1,0 +1,111 @@
+.cards-page .page-heading { align-items: center; }
+.cards-page .page-heading p { color: #849088; font-size: 12px; }
+.card-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 17px 0 23px; }
+.card-metric { position: relative; display: grid; gap: 7px; overflow: hidden; min-height: 96px; padding: 15px 17px; border-radius: 13px; box-shadow: inset 0 1px #ffffffa6; }
+.card-metric::after { position: absolute; right: -18px; bottom: -45px; width: 120px; height: 120px; border: 18px solid #ffffff40; border-radius: 50%; content: ""; }
+.card-metric span, .card-metric strong, .card-metric small { position: relative; z-index: 1; }
+.card-metric span { color: #607467; font-size: 10px; }
+.card-metric strong { color: #1c5836; font: 700 21px Manrope, sans-serif; }
+.card-metric small { color: #7e9083; font-size: 9px; }
+.metric-limit { background: linear-gradient(130deg, #e5f4e8, #d5ecd9); }
+.metric-used { background: linear-gradient(130deg, #fff0e7, #f9e0d4); }
+.metric-used strong { color: #b75a3e; }
+.metric-available { background: linear-gradient(130deg, #e8f1fb, #d9e8f7); }
+.metric-available strong { color: #356b9b; }
+.cards-section { margin-bottom: 22px; }
+.cards-section-heading { display: flex; justify-content: space-between; margin-bottom: 11px; }
+.cards-section-heading h2 { margin: 0 0 4px; color: #2a3b30; font: 700 14px Manrope, sans-serif; }
+.cards-section-heading p { margin: 0; color: #859188; font-size: 10px; }
+.credit-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 13px; }
+.credit-card { overflow: hidden; border: 1px solid #e6ece7; border-radius: 16px; background: #fff; box-shadow: 0 6px 20px #193c2c0d; transition: transform .18s ease, box-shadow .18s ease; }
+.credit-card:hover { transform: translateY(-2px); box-shadow: 0 10px 27px #193c2c17; }
+.credit-card-face { display: grid; gap: 18px; min-height: 139px; padding: 15px 17px 13px; background: linear-gradient(130deg, #193e2c, #24764a); color: white; }
+.credit-card-face.brand-mastercard { background: linear-gradient(130deg, #252936, #45485a); }
+.credit-card-face.brand-elo { background: linear-gradient(130deg, #41301e, #98702e); }
+.credit-card-face.brand-amex { background: linear-gradient(130deg, #17334c, #39749d); }
+.credit-card-face.brand-other { background: linear-gradient(130deg, #3c354c, #70618a); }
+.credit-card-face-top, .credit-card-face-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.credit-card-chip { display: grid; width: 27px; height: 21px; place-items: center; border: 1px solid #ffffff5c; border-radius: 6px; color: #e5d69f; font-size: 14px; }
+.credit-card-brand { color: #fff; font: 700 12px Manrope, sans-serif; }
+.credit-card-number { color: #f2f5ee; font: 500 15px Manrope, sans-serif; letter-spacing: .12em; }
+.credit-card-face-bottom { color: #ffffffdb; font-size: 10px; text-transform: uppercase; }
+.credit-card-face-bottom b { color: #ffffffa8; font-size: 8px; letter-spacing: .1em; }
+.credit-card-info { padding: 13px 15px 14px; }
+.credit-card-limit { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.credit-card-limit span { color: #87948b; font-size: 9px; }
+.credit-card-limit strong { color: #34463a; font: 700 11px Manrope, sans-serif; white-space: nowrap; }
+.credit-card-limit small { color: #89968d; font-size: 9px; font-weight: 500; }
+.card-limit-track { overflow: hidden; height: 6px; margin: 9px 0 11px; border-radius: 9px; background: #edf2ee; }
+.card-limit-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #54b477, #218052); }
+.credit-card-dates { display: flex; justify-content: space-between; color: #8a968e; font-size: 9px; }
+.credit-card-dates b { color: #526459; }
+.credit-card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 11px; border-top: 1px solid #edf1ed; }
+.credit-card-actions button { min-height: 30px; padding: 0 9px; border: 1px solid #e0e9e2; border-radius: 8px; background: #fff; color: #55715e; font: 600 9px Manrope, sans-serif; cursor: pointer; }
+.credit-card-actions button:first-child { border-color: #d7ebdc; background: #eff8f1; color: #26774a; }
+.credit-card-actions button:hover { background: #f3f8f4; }
+.credit-card-actions .archive-card { margin-left: auto; color: #9a7651; }
+.credit-card-archived { opacity: .72; }
+.credit-card-archived .credit-card-face { filter: saturate(.5); }
+.card-empty { display: grid; grid-column: 1 / -1; justify-items: center; padding: 36px 20px; text-align: center; }
+.card-empty-icon { display: grid; width: 49px; height: 49px; place-items: center; border-radius: 15px; background: #edf6ef; color: #27814e; font-size: 24px; }
+.card-empty h3 { margin: 13px 0 4px; color: #34463a; font: 700 14px Manrope, sans-serif; }
+.card-empty p { max-width: 370px; margin: 0; color: #839087; font-size: 10px; line-height: 1.6; }
+.card-empty .button { margin-top: 15px; }
+.card-invoices-panel, .card-purchases-panel { margin-top: 15px; padding: 17px; }
+.card-invoices-panel .panel-heading, .card-purchases-panel .panel-heading { align-items: center; }
+.invoice-month-select { display: flex; align-items: center; gap: 8px; color: #748279; font-size: 9px; }
+.invoice-month-select input { min-height: 34px; padding: 0 8px; border: 1px solid #e1e9e2; border-radius: 8px; color: #405247; background: #fff; font: inherit; }
+.invoice-list, .card-purchase-list { display: grid; gap: 7px; }
+.invoice-row { display: grid; grid-template-columns: 35px minmax(130px, 1fr) auto auto max-content; align-items: center; gap: 11px; padding: 11px 12px; border: 1px solid #eaf0eb; border-radius: 12px; background: #fff; }
+.invoice-icon { display: grid; width: 33px; height: 33px; place-items: center; border-radius: 10px; background: #fff3e9; color: #bb7040; font-size: 14px; }
+.invoice-paid .invoice-icon { background: #eaf6ed; color: #258052; }
+.invoice-overdue .invoice-icon { background: #fff0ee; color: #bb574b; }
+.invoice-info, .purchase-info { display: grid; min-width: 0; gap: 4px; }
+.invoice-info strong, .purchase-info strong { overflow: hidden; color: #35473b; font: 700 11px Manrope, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.invoice-info small, .purchase-info small { color: #87938b; font-size: 9px; }
+.invoice-status { padding: 5px 8px; border-radius: 99px; background: #fff5e8; color: #a06b35; font-size: 8px; font-weight: 700; white-space: nowrap; }
+.invoice-paid .invoice-status { background: #eaf6ed; color: #24804d; }
+.invoice-overdue .invoice-status { background: #fff0ee; color: #b54f42; }
+.invoice-total { color: #34483a; font: 700 11px Manrope, sans-serif; white-space: nowrap; }
+.invoice-pay { min-height: 31px; padding: 0 10px; border: 1px solid #218052; border-radius: 8px; background: #218052; color: #fff; font: 700 9px Manrope, sans-serif; cursor: pointer; white-space: nowrap; }
+.invoice-pay:hover { background: #176a40; }
+.card-empty-inline { display: flex; align-items: center; gap: 10px; padding: 16px 3px; }
+.card-empty-inline > span { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 11px; background: #f1f6f2; color: #4d805e; }
+.card-empty-inline > div { display: grid; gap: 4px; }
+.card-empty-inline strong { color: #536359; font: 700 10px Manrope, sans-serif; }
+.card-empty-inline small { color: #8a958d; font-size: 9px; line-height: 1.4; }
+.card-purchase-row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 10px 2px; border-top: 1px solid #eef2ee; }
+.purchase-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; background: #eff6f1; color: #2f8051; }
+.purchase-invoice-label { color: #9c7447; font-size: 8px; text-align: right; }
+.purchase-settled { color: #338052; }
+.card-purchase-row > strong { color: #394c3f; font: 700 10px Manrope, sans-serif; white-space: nowrap; }
+.card-dialog { width: min(480px, calc(100% - 28px)); max-height: 90dvh; overflow-y: auto; border-radius: 16px; }
+.card-dialog form { padding: 21px; }
+.card-dialog label { display: block; margin-bottom: 12px; color: #526056; font-size: 10px; font-weight: 600; }
+.card-dialog input, .card-dialog select { box-sizing: border-box; min-height: 40px; }
+.invoice-preview { padding: 10px 12px; border: 1px solid #dcece0; border-radius: 9px; background: #f1f8f2; color: #6d8072; font-size: 9px; line-height: 1.5; }
+.invoice-preview strong { color: #28754a; text-transform: capitalize; }
+.pay-invoice-context { padding: 10px 12px; border-radius: 9px; background: #f2f7f3; color: #43805a; font-size: 10px; }
+.card-dialog [hidden] { display: none !important; }
+@media(max-width: 850px) { .invoice-row { grid-template-columns: 34px minmax(110px, 1fr) auto auto; } .invoice-pay { grid-column: 2 / -1; justify-self: end; } }
+@media(max-width: 600px) {
+  .cards-page .page-heading { align-items: flex-start; }
+  .cards-page .heading-actions { display: flex; width: 100%; gap: 7px; }
+  .cards-page .heading-actions button { padding: 0 10px; font-size: 10px; }
+  .card-metrics { grid-template-columns: 1fr; gap: 7px; margin: 12px 0 18px; }
+  .card-metric { min-height: 72px; grid-template-columns: 1fr auto; align-items: center; padding: 11px 14px; }
+  .card-metric strong { grid-column: 2; grid-row: 1 / span 2; font-size: 17px; }
+  .card-metric small { grid-column: 1; }
+  .credit-card-grid { grid-template-columns: 1fr; }
+  .card-invoices-panel, .card-purchases-panel { padding: 13px 10px; }
+  .card-invoices-panel > .panel-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .invoice-row { grid-template-columns: 32px minmax(0, 1fr) auto; gap: 7px; padding: 10px 8px; }
+  .invoice-info { grid-column: 2 / 4; }
+  .invoice-status { grid-column: 2; justify-self: start; }
+  .invoice-total { grid-column: 3; justify-self: end; }
+  .invoice-pay { grid-column: 2 / 4; justify-self: stretch; }
+  .card-purchase-row { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 7px; }
+  .purchase-invoice-label { grid-column: 2; text-align: left; }
+  .card-purchase-row > strong { grid-column: 3; grid-row: 1 / span 2; }
+  .card-dialog form { padding: 17px; }
+}
