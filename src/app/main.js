@@ -1,70 +1,22 @@
 import { firebaseReady, observeAuth } from "../services/firebase/firebase.js";
+import { loadPageStyles } from "./page-styles.js";
 
 const appRoot = document.querySelector("#app");
 let renderVersion = 0;
 let currentUser = null;
-const pageStyles = {
-  auth: ["components.css", "auth.css"],
-  dashboard: ["layout.css", "components.css", "dashboard.css", "dialogs.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css"],
-  profile: ["layout.css", "components.css", "responsive.css", "profile.css", "sidebar-nav.css", "mobile-nav.css"],
-  accounts: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "accounts.css"],
-  commitments: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "commitments.css"],
-  goals: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "goals.css"],
-  cards: ["layout.css", "components.css", "dashboard.css", "responsive.css", "sidebar-nav.css", "mobile-nav.css", "dialogs.css", "cards.css"],
-};
-const pageStyleLoads = new WeakMap();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./public/service-worker.js").catch(() => {}));
 }
 
-async function loadPageStyles(page, version) {
-  const requested = pageStyles[page];
-  const existing = new Map([...document.head.querySelectorAll("link[data-page-style]")]
-    .map((link) => [link.dataset.pageStyle, link]));
-  const pending = [];
-
-  for (const file of requested) {
-    if (existing.has(file)) {
-      const pendingLoad = pageStyleLoads.get(existing.get(file));
-      if (pendingLoad) pending.push(pendingLoad);
-      continue;
-    }
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = `src/styles/${file}`;
-    link.dataset.pageStyle = file;
-    const load = new Promise((resolve, reject) => {
-      link.onload = resolve;
-      link.onerror = () => {
-        link.remove();
-        existing.delete(file);
-        reject(new Error(`Não foi possível carregar os estilos ${file}.`));
-      };
-      document.head.append(link);
-    });
-    pageStyleLoads.set(link, load);
-    pending.push(load);
-    existing.set(file, link);
-  }
-
-  await Promise.all(pending);
-  if (version !== renderVersion) return false;
-
-  requested.forEach((file) => document.head.append(existing.get(file)));
-  document.head.querySelectorAll("link[data-page-style]").forEach((link) => {
-    if (!requested.includes(link.dataset.pageStyle)) link.remove();
-  });
-  return true;
-}
-
+// Telas que ocupam toda a página (login e dashboard).
 async function renderPage(path, mount, isAuthenticated, stylePage) {
   const version = ++renderVersion;
   document.body.classList.toggle("authenticated", isAuthenticated);
   appRoot.setAttribute("aria-busy", "true");
 
   try {
-    if (!await loadPageStyles(stylePage, version)) return;
+    if (!await loadPageStyles(stylePage, () => version === renderVersion)) return;
     const response = await fetch(path);
     if (!response.ok) throw new Error(`Não foi possível carregar ${path}.`);
     const markup = await response.text();
@@ -110,133 +62,92 @@ function showDashboard(user) {
   }, true, "dashboard");
 }
 
-async function showProfile(user) {
+// Telas internas: trocam só o miolo (.content) e mantêm menu e cabeçalho.
+// A chave é o valor de data-page usado no menu.
+const subPages = {
+  perfil: {
+    style: "profile",
+    path: "src/pages/profile/index.html",
+    selector: "#profileRoot",
+    title: "Meu perfil",
+    loadError: "Não foi possível carregar a página de perfil.",
+    missingError: "O conteúdo do perfil não foi encontrado.",
+    openError: "Não foi possível abrir o perfil",
+    awaitMount: true,
+    load: async () => (await import("../pages/profile/profile.js")).mountProfilePage,
+  },
+  contas: {
+    style: "accounts",
+    path: "src/pages/accounts/index.html",
+    title: "Contas e carteiras",
+    loadError: "Não foi possível carregar contas e carteiras.",
+    openError: "Não foi possível abrir contas e carteiras",
+    load: async () => (await import("../pages/accounts/accounts.js")).mountAccountsPage,
+  },
+  compromissos: {
+    style: "commitments",
+    path: "src/pages/commitments/index.html",
+    title: "Compromissos",
+    loadError: "Não foi possível carregar os compromissos.",
+    openError: "Não foi possível abrir compromissos",
+    load: async () => (await import("../pages/commitments/commitments.js")).mountCommitmentsPage,
+  },
+  metas: {
+    style: "goals",
+    path: "src/pages/goals/index.html",
+    title: "Metas",
+    loadError: "Não foi possível carregar suas metas.",
+    openError: "Não foi possível abrir suas metas",
+    load: async () => (await import("../pages/goals/goals.js")).mountGoalsPage,
+  },
+  cartoes: {
+    style: "cards",
+    path: "src/pages/cards/index.html",
+    title: "Cartões",
+    loadError: "Não foi possível carregar seus cartões.",
+    openError: "Não foi possível abrir seus cartões",
+    load: async () => (await import("../pages/cards/cards.js")).mountCardsPage,
+  },
+};
+
+async function showSubPage(user, route) {
   if (!user) return showLogin();
   const version = ++renderVersion;
   appRoot.setAttribute("aria-busy", "true");
   try {
-    if (!await loadPageStyles("profile", version)) return;
-    const response = await fetch("src/pages/perfil/index.html");
-    if (!response.ok) throw new Error("Não foi possível carregar a página de perfil.");
+    if (!await loadPageStyles(route.style, () => version === renderVersion)) return;
+    const response = await fetch(route.path);
+    if (!response.ok) throw new Error(route.loadError);
     const markup = await response.text();
     if (version !== renderVersion) return;
-    const profileDocument = new DOMParser().parseFromString(markup, "text/html");
-    const profilePage = profileDocument.querySelector("#profileRoot");
-    if (!profilePage) throw new Error("O conteúdo do perfil não foi encontrado.");
+    let html = markup;
+    if (route.selector) {
+      const pageRoot = new DOMParser().parseFromString(markup, "text/html").querySelector(route.selector);
+      if (!pageRoot) throw new Error(route.missingError);
+      html = pageRoot.innerHTML;
+    }
     const content = appRoot.querySelector(".content");
     if (!content) return showDashboard(user);
-    content.innerHTML = profilePage.innerHTML;
-    document.querySelector("#pageTitle").textContent = "Meu perfil";
-    const { mountProfilePage } = await import("../pages/perfil/profile.js");
-    if (version === renderVersion) await mountProfilePage(user);
-  } catch (error) {
-    if (version === renderVersion) {
-      const content = appRoot.querySelector(".content");
-      if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir o perfil</h1><p>${error.message}</p></section>`;
-    }
-  } finally {
-    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
-  }
-}
-
-async function showAccounts(user) {
-  if (!user) return showLogin();
-  const version = ++renderVersion;
-  appRoot.setAttribute("aria-busy", "true");
-  try {
-    if (!await loadPageStyles("accounts", version)) return;
-    const response = await fetch("src/pages/contas/index.html");
-    if (!response.ok) throw new Error("Não foi possível carregar contas e carteiras.");
-    const markup = await response.text();
+    content.innerHTML = html;
+    document.querySelector("#pageTitle").textContent = route.title;
+    const mount = await route.load();
     if (version !== renderVersion) return;
-    const content = appRoot.querySelector(".content");
-    if (!content) return showDashboard(user);
-    content.innerHTML = markup;
-    document.querySelector("#pageTitle").textContent = "Contas e carteiras";
-    const { mountAccountsPage } = await import("../pages/contas/accounts.js");
-    if (version === renderVersion) mountAccountsPage(user);
+    if (route.awaitMount) await mount(user);
+    else mount(user);
   } catch (error) {
     if (version === renderVersion) {
       const content = appRoot.querySelector(".content");
-      if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir contas e carteiras</h1><p>${error.message}</p></section>`;
+      if (content) content.innerHTML = `<section class="page-load-error"><h1>${route.openError}</h1><p>${error.message}</p></section>`;
     }
   } finally {
     if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
   }
 }
 
-async function showCommitments(user) {
-  if (!user) return showLogin();
-  const version = ++renderVersion;
-  appRoot.setAttribute("aria-busy", "true");
-  try {
-    if (!await loadPageStyles("commitments", version)) return;
-    const response = await fetch("src/pages/compromissos/index.html");
-    if (!response.ok) throw new Error("Não foi possível carregar os compromissos.");
-    const markup = await response.text();
-    if (version !== renderVersion) return;
-    const content = appRoot.querySelector(".content");
-    if (!content) return showDashboard(user);
-    content.innerHTML = markup;
-    document.querySelector("#pageTitle").textContent = "Compromissos";
-    const { mountCommitmentsPage } = await import("../pages/compromissos/commitments.js");
-    if (version === renderVersion) mountCommitmentsPage(user);
-  } catch (error) {
-    if (version === renderVersion) {
-      const content = appRoot.querySelector(".content");
-      if (content) content.innerHTML = `<section class="page-load-error"><h1>Não foi possível abrir compromissos</h1><p>${error.message}</p></section>`;
-    }
-  } finally {
-    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
-  }
-}
-
-async function showGoals(user) {
-  if (!user) return showLogin();
-  const version = ++renderVersion;
-  appRoot.setAttribute("aria-busy", "true");
-  try {
-    if (!await loadPageStyles("goals", version)) return;
-    const response = await fetch("src/pages/metas/index.html");
-    if (!response.ok) throw new Error("NÃ£o foi possÃ­vel carregar suas metas.");
-    const content = appRoot.querySelector(".content");
-    if (!content) return showDashboard(user);
-    content.innerHTML = await response.text();
-    document.querySelector("#pageTitle").textContent = "Metas";
-    const { mountGoalsPage } = await import("../pages/metas/goals.js");
-    if (version === renderVersion) mountGoalsPage(user);
-  } catch (error) {
-    if (version === renderVersion) {
-      const content = appRoot.querySelector(".content");
-      if (content) content.innerHTML = `<section class="page-load-error"><h1>NÃ£o foi possÃ­vel abrir suas metas</h1><p>${error.message}</p></section>`;
-    }
-  } finally {
-    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
-  }
-}
-
-async function showCards(user) {
-  if (!user) return showLogin();
-  const version = ++renderVersion;
-  appRoot.setAttribute("aria-busy", "true");
-  try {
-    if (!await loadPageStyles("cards", version)) return;
-    const response = await fetch("src/pages/cartoes/index.html");
-    if (!response.ok) throw new Error("NÃ£o foi possÃ­vel carregar seus cartÃµes.");
-    const content = appRoot.querySelector(".content");
-    if (!content) return showDashboard(user);
-    content.innerHTML = await response.text();
-    document.querySelector("#pageTitle").textContent = "Cartões";
-    const { mountCardsPage } = await import("../pages/cartoes/cards.js");
-    if (version === renderVersion) mountCardsPage(user);
-  } catch (error) {
-    if (version === renderVersion) {
-      const content = appRoot.querySelector(".content");
-      if (content) content.innerHTML = `<section class="page-load-error"><h1>NÃ£o foi possível abrir seus cartões</h1><p>${error.message}</p></section>`;
-    }
-  } finally {
-    if (version === renderVersion) appRoot.setAttribute("aria-busy", "false");
-  }
+function navigateTo(page) {
+  if (page === "inicio") return showDashboard(currentUser);
+  if (subPages[page]) return showSubPage(currentUser, subPages[page]);
+  return undefined;
 }
 
 appRoot.addEventListener("click", (event) => {
@@ -260,12 +171,7 @@ appRoot.addEventListener("click", (event) => {
   document.body.classList.remove("mobile-sidebar-open");
   document.querySelector("#mobileMore")?.setAttribute("aria-expanded", "false");
 
-  if (page === "perfil") return showProfile(currentUser);
-  if (page === "contas") return showAccounts(currentUser);
-  if (page === "compromissos") return showCommitments(currentUser);
-  if (page === "metas") return showGoals(currentUser);
-  if (page === "cartoes") return showCards(currentUser);
-  if (page === "inicio") return showDashboard(currentUser);
+  if (page === "inicio" || subPages[page]) return navigateTo(page);
   if (page === "movimentacoes") {
     const selector = ".transactions-panel";
     if (appRoot.querySelector(selector)) appRoot.querySelector(selector).scrollIntoView({ behavior: "smooth", block: "center" });
@@ -280,13 +186,7 @@ appRoot.addEventListener("click", (event) => {
   }
 });
 
-window.addEventListener("orbe:navigate", (event) => {
-  if (event.detail?.page === "inicio") showDashboard(currentUser);
-  if (event.detail?.page === "perfil") showProfile(currentUser);
-  if (event.detail?.page === "compromissos") showCommitments(currentUser);
-  if (event.detail?.page === "metas") showGoals(currentUser);
-  if (event.detail?.page === "cartoes") showCards(currentUser);
-});
+window.addEventListener("orbe:navigate", (event) => navigateTo(event.detail?.page));
 
 if (firebaseReady) {
   observeAuth((user) => {

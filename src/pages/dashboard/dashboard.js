@@ -16,21 +16,24 @@ import {
   saveTransaction,
   addCreditCardPurchase,
 } from "../../services/firebase/firebase.js";
+import { showToastOn } from "../../utils/toast.js";
+import { dateKeyInZone } from "../../utils/date.js";
+import { escapeHtml } from "../../utils/dom.js";
+import { currencyFormatter } from "../../utils/format.js";
 
 let dialog;
 let form;
 let toast;
 let rows;
-let money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+let money = currencyFormatter('BRL');
 let profileTimeZone = 'America/Sao_Paulo';
 let activeUser = null;
 let currentTransactions = [];
-let currentCommitments = [];
 let currentOccurrences = [];
 let currentAccounts = [];
 let currentCreditCards = [];
+let currentCardExpenses = [];
 let currentTransfers = [];
-let toastTimer;
 
 document.addEventListener('pointerdown', (event) => {
   const sidebar = document.querySelector('#sidebar');
@@ -41,92 +44,85 @@ document.addEventListener('pointerdown', (event) => {
   mobileMore?.setAttribute('aria-expanded', 'false');
 });
 
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-}
+function showToast(message) { showToastOn(toast, message); }
 
 function initials(user) {
   const label = user.displayName || user.email || 'Orbe';
   return label.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(part => part[0].toUpperCase()).join('');
 }
 
-function todayKey() {
-  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: profileTimeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
-  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
-  return `${values.year}-${values.month}-${values.day}`;
+function todayKey() { return dateKeyInZone(profileTimeZone); }
+
+// Opção A: compra no cartão é despesa na data da compra.
+// O pagamento da fatura (transação com sourceCardId) só baixa o saldo da conta
+// e não pode contar como despesa de novo.
+function cardPurchaseExpenses(cards) {
+  return cards.flatMap(card => (card.purchases || []).map(purchase => ({
+    id: `card-${card.id}-${purchase.id}`,
+    type: 'expense',
+    description: purchase.installmentCount
+      ? `${purchase.description} (${purchase.installmentNumber}/${purchase.installmentCount})`
+      : purchase.description,
+    amount: Number(purchase.amount) || 0,
+    category: purchase.category,
+    date: purchase.date,
+    cardName: card.name,
+  })));
 }
 
-async function dashboardRead(label, reader) {
-  try {
-    return await reader();
-  } catch (cause) {
-    const error = new Error(cause?.message || 'Falha na leitura do Firestore.', { cause });
-    error.code = cause?.code || 'unknown';
-    error.dashboardOperation = label;
-    throw error;
-  }
+function reportableMovements(transactions) {
+  return [...transactions.filter(item => !item.sourceCardId), ...currentCardExpenses];
+}
+
+function describeReadError(label, error) {
+  console.error(`[dashboard] falha ao ler ${label}:`, error?.code || '(sem código)', error);
+  return error?.code ? `${label} (${error.code})` : label;
+}
+
+async function readOrDefault(label, read, fallback, failures) {
+  try { return await read(); }
+  catch (error) { failures.push(describeReadError(label, error)); return fallback; }
 }
 
 async function loadDashboard(user) {
   rows.innerHTML = '<tr><td colspan="4" class="empty-transactions">Carregando movimentações...</td></tr>';
+  const failures = [];
   try {
+    const fallbackProfile = { name: user.displayName || user.email?.split('@')[0] || 'Minha conta', currency: 'BRL', timeZone: 'America/Sao_Paulo' };
     const [transactions, commitments, profile] = await Promise.all([
-      dashboardRead('movimentações (users/{uid}/transactions)', () => getTransactions(user.uid)),
-      dashboardRead('compromissos (users/{uid}/commitments)', () => getCommitments(user.uid)),
-      dashboardRead('perfil (users/{uid})', () => getUserProfile(user)),
+      readOrDefault('movimentações', () => getTransactions(user.uid), [], failures),
+      readOrDefault('compromissos', () => getCommitments(user.uid), [], failures),
+      readOrDefault('perfil', () => getUserProfile(user), fallbackProfile, failures),
     ]);
     if (activeUser?.uid !== user.uid) return;
-    let accounts = [];
-    let transfers = [];
-    try {
-      [accounts, transfers] = await Promise.all([
-        dashboardRead('contas (users/{uid}/accounts)', () => getAccounts(user.uid)),
-        dashboardRead('transferências (users/{uid}/transfers)', () => getTransfers(user.uid)),
-      ]);
-    } catch (error) {
-      console.error('[Orbe] Falha ao carregar contas/transferências:', error);
-      showToast(firebaseErrorMessage(error));
-    }
+    const [accounts, transfers, occurrences, goals, creditCards] = await Promise.all([
+      readOrDefault('contas', () => getAccounts(user.uid), [], failures),
+      readOrDefault('transferências', () => getTransfers(user.uid), [], failures),
+      readOrDefault('vencimentos', () => getCommitmentOccurrences(user.uid, commitments), [], failures),
+      readOrDefault('metas', () => getGoals(user.uid), [], failures),
+      readOrDefault('cartões/faturas', () => getCreditCards(user.uid), [], failures),
+    ]);
     if (activeUser?.uid !== user.uid) return;
-    money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: profile.currency || 'BRL' });
+    money = currencyFormatter(profile.currency || 'BRL');
     profileTimeZone = profile.timeZone || 'America/Sao_Paulo';
     document.querySelector('#profileName').textContent = profile.name;
     document.querySelector('#greeting').firstChild.textContent = `Olá, ${profile.name} `;
-    const occurrences = await getCommitmentOccurrences(user.uid, commitments);
-    let goals = [];
-    try {
-      goals = await dashboardRead('metas (users/{uid}/goals)', () => getGoals(user.uid));
-    } catch (error) {
-      console.warn('[Orbe] Não foi possível carregar metas na Visão geral:', error);
-    }
-    let creditCards = [];
-    try {
-      creditCards = await dashboardRead('cartões (users/{uid}/creditCards)', () => getCreditCards(user.uid));
-    } catch (error) {
-      console.warn('[Orbe] Não foi possível carregar cartões na Visão geral:', error);
-    }
-    if (activeUser?.uid !== user.uid) return;
     currentTransactions = transactions;
-    currentCommitments = commitments;
     currentAccounts = accounts;
     currentCreditCards = creditCards;
+    currentCardExpenses = cardPurchaseExpenses(creditCards);
     currentTransfers = transfers;
     currentOccurrences = occurrences;
-    renderTransactions(transactions);
+    renderTransactions([...transactions, ...currentCardExpenses].sort((a, b) => b.date.localeCompare(a.date)));
     renderTransactionAccountOptions(accounts);
     renderTransactionCardOptions(creditCards);
     renderFinanceSummary(transactions, occurrences, accounts);
     renderCommitments(occurrences);
     renderGoalPreview(goals);
     refreshNotificationIndicator(user);
+    if (failures.length) showToast(`Não foi possível ler: ${failures.join(', ')}. Veja o console (F12).`);
   } catch (error) {
+    console.error('[dashboard] erro ao montar o painel:', error);
     rows.innerHTML = '<tr><td colspan="4" class="empty-transactions">Não foi possível carregar seus dados financeiros.</td></tr>';
     showToast(firebaseErrorMessage(error));
   }
@@ -155,7 +151,8 @@ function renderTransactionAccountOptions(accounts) {
     label.id = 'transactionAccountField';
     label.innerHTML = 'Conta ou carteira<select name="accountId"></select>';
     select = label.querySelector('select');
-    form.querySelector('.form-note').before(label);
+    // O campo entra depois da data e antes do cartão; o aviso .form-note não existe mais neste formulário.
+    (form.querySelector('.form-note') ?? form.querySelector('#transactionCardField') ?? form.querySelector('.modal-actions')).before(label);
   }
   const active = accounts.filter(account => account.active);
   select.innerHTML = active.length
@@ -275,7 +272,7 @@ function renderTransactions(transactions) {
   rows.innerHTML = transactions.slice(0, 8).map(item => {
       const date = new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).replace('.', '');
       const income = item.type === 'income';
-      const accountName = currentAccounts.find(account => account.id === item.accountId)?.name || 'Sem conta vinculada';
+      const accountName = item.cardName ? `Cartão ${item.cardName}` : currentAccounts.find(account => account.id === item.accountId)?.name || 'Sem conta vinculada';
       return `<tr><td><span class="transaction-icon ${income ? 'salary' : 'market'}">${income ? '↙' : '↗'}</span><span class="row-title">${escapeHtml(item.description)}</span><small>${escapeHtml(accountName)}</small></td><td><span class="category-pill">${escapeHtml(item.category)}</span></td><td>${date}</td><td class="${income ? 'value-positive' : 'value-negative'}">${income ? '+' : '−'} ${money.format(item.amount)}</td></tr>`;
     }).join('');
 }
@@ -329,7 +326,7 @@ function renderFinanceSummary(transactions, occurrences, accounts = []) {
   document.querySelector('.page-heading .eyebrow').innerHTML = `<span class="live-dot"></span> ${now.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).toLocaleUpperCase('pt-BR')}`;
   setupSummaryControls(now);
   const selectedMonth = document.querySelector('#periodButton').value || todayKey().slice(0, 7);
-  const monthTransactions = transactions.filter(item => item.date?.startsWith(selectedMonth));
+  const monthTransactions = reportableMovements(transactions).filter(item => item.date?.startsWith(selectedMonth));
   const sum = (items, type) => items.filter(item => item.type === type).reduce((total, item) => total + item.amount, 0);
   const income = sum(monthTransactions, 'income');
   const expenses = sum(monthTransactions, 'expense');
@@ -358,16 +355,17 @@ function renderFinanceSummary(transactions, occurrences, accounts = []) {
   cards[3].querySelector('.card-foot').innerHTML = `<span>${pending.length} compromisso(s) em aberto${nextPending ? ` · próximo ${new Date(`${nextPending.dueDate}T12:00:00`).toLocaleDateString('pt-BR')}` : ''}</span>`;
   renderCashflowChart(transactions, Number(document.querySelector('#chartPeriod').value || 6));
   const notice = document.querySelector('.demo-notice');
-  notice.innerHTML = '<span>&#9432;</span> Saldo e movimentações usam seus registros. A automação dos próximos vencimentos depende de publicar a Cloud Function.';
+  if (notice) notice.innerHTML = '<span>&#9432;</span> Saldo e movimentações usam seus registros. A automação dos próximos vencimentos depende de publicar a Cloud Function.';
 }
 
 function renderCashflowChart(transactions, range = 6) {
   const today = todayKey().slice(0, 7);
   const end = new Date(`${today}-01T12:00:00`);
   const months = Array.from({ length: range }, (_, index) => new Date(end.getFullYear(), end.getMonth() - range + 1 + index, 1));
+  const movements = reportableMovements(transactions);
   const totals = months.map(date => {
     const key = monthKey(date);
-    const records = transactions.filter(item => item.date?.startsWith(key));
+    const records = movements.filter(item => item.date?.startsWith(key));
     return { key, date, income: records.filter(item => item.type === 'income').reduce((value, item) => value + item.amount, 0), expense: records.filter(item => item.type === 'expense').reduce((value, item) => value + item.amount, 0) };
   });
   const maxValue = Math.max(1, ...totals.flatMap(item => [item.income, item.expense]));
@@ -417,6 +415,7 @@ export function mountDashboardPage(user) {
   activeUser = user;
   currentAccounts = [];
   currentTransfers = [];
+  currentCardExpenses = [];
   dialog = document.querySelector('#transactionDialog');
   form = document.querySelector('#transactionForm');
   toast = document.querySelector('#toast');

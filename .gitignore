@@ -1,9 +1,12 @@
 .env
 .env.*
 !.env.example
-src/services/firebase/firebase-config.local.js
 node_modules/
 dist/
 .firebase/
 firebase-debug.log
 firestore-debug.log
+*.log
+.DS_Store
+Thumbs.db
+*.zip

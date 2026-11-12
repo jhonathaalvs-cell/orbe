@@ -1,59 +1,50 @@
 # Orbe — Gestão financeira pessoal e familiar
 
-Primeira base da plataforma descrita em `docs/projeto.md` e especificada integralmente em `docs/projeto-original.txt`. A autenticação por e-mail/senha e os dados financeiros usam Firebase via módulos CDN. O resumo e as movimentações são reais; metas e módulos ainda não implementados permanecem demonstrativos.
+Plataforma web responsiva de organização financeira, descrita em `docs/projeto.md` e especificada integralmente em `docs/projeto-original.txt`. Frontend estático com módulos ES; dados e login em Firebase (Authentication e Cloud Firestore); rotinas agendadas em Cloud Functions.
 
 ## Iniciar
 
-Sirva a pasta por HTTP em localhost (por exemplo, com a extensão Live Server do VS Code) e abra a URL local. Os módulos Firebase não funcionam ao abrir diretamente via `file://`. Este ambiente não tem Node.js/npm instalado.
+Sirva a pasta por HTTP em localhost (por exemplo, com a extensão Live Server do VS Code) e abra a URL local. Os módulos não funcionam ao abrir via `file://`. Não há etapa de build.
 
 ## Firebase
 
-1. A configuração pública do app web fica em `src/services/firebase/firebase-config.js` e é necessária para publicar o site estático. Ela não contém uma chave privada; o acesso aos dados é protegido pelas regras do Firestore.
-2. No Firebase Console, ative **Authentication → Email/Password** e crie a base do **Cloud Firestore**.
-3. Publique as regras atualizadas de `firestore.rules` pelo Firebase Console ou Firebase CLI.
-4. Instale Node.js 22 e Firebase CLI, autentique com `firebase login`, rode `npm install` dentro de `functions/` e, na raiz, publique com `firebase deploy --only firestore:rules,functions --project orbe-5fa05`.
-5. Inicie em localhost. Cadastre uma conta. Compromissos geram ocorrências e lembretes; pagamentos entram no histórico apenas quando você confirma.
+1. A configuração pública do app web fica em `src/services/firebase/firebase-config.js`. Ela não contém chave privada; os dados são protegidos por `firestore.rules`.
+2. No Firebase Console, ative **Authentication → Email/Password** e crie o **Cloud Firestore**.
+3. Instale Node.js 22 e o Firebase CLI, rode `firebase login` e `npm install` dentro de `functions/`.
+4. Na raiz, publique: `firebase deploy --only firestore:rules,firestore:indexes,functions --project orbe-5fa05`.
+5. Cadastre uma conta e use o app. Detalhes em [docs/firebase.md](docs/firebase.md).
 
-As regras concedem acesso somente ao usuário autenticado dono do caminho e validam os campos das movimentações. Nunca use credenciais de conta de serviço no navegador. Veja [docs/firebase.md](docs/firebase.md) para detalhes.
+## O que já funciona
 
-A automação agendada usa Cloud Scheduler e pode exigir o plano Blaze/billing habilitado no projeto.
-
-## O que está nesta primeira entrega
-
-- Dashboard responsivo com saldo e fluxo calculados dos seus registros.
-- Navegação pelos módulos previstos, identificando os módulos que ainda serão desenvolvidos.
-- Cadastro e login com Firebase Authentication.
-- Movimentações por usuário no Cloud Firestore, protegidas por regras.
+- Cadastro, login, perfil (nome, moeda, fuso, lembretes) e redefinição de senha.
+- Dashboard com saldo, receitas, despesas, fluxo e movimentações calculados dos seus registros.
+- Contas e carteiras, com transferências.
 - Compromissos recorrentes, vencimentos e confirmação de pagamento sem duplicar despesa.
-- Função agendada idempotente para gerar ocorrências e lembretes internos.
-- Página de perfil separada com preferências e redefinição de senha.
-- Manifest e service worker iniciais para o shell da aplicação.
-- Estrutura organizada para evoluir o frontend, serviços e backend Firebase.
+- Cartões de crédito: compras, parcelamento e faturas. A compra conta como despesa na data da compra; pagar a fatura baixa o saldo da conta.
+- Metas com depósitos e análise de prazo.
+- Função agendada que gera vencimentos e lembretes internos (precisa ser publicada).
+
+Ainda não: famílias, dívidas, calendário, relatórios, avaliações e push. Veja [docs/roadmap.md](docs/roadmap.md).
 
 ## Estrutura
 
 ```text
-public/                  arquivos públicos, manifest, logo e service worker
-src/app/                  entrada e roteamento da aplicação
-src/pages/login/          login e cadastro
-src/pages/dashboard/      dashboard e interações financeiras
-src/pages/perfil/         perfil do usuário e preferências
-src/assets/               imagens e demais ativos da interface
-src/components/           componentes de layout, formulários, gráficos e tabelas
-src/config/               configuração da aplicação
-src/hooks/                hooks de interface
-src/pages/                páginas por módulo
-src/services/             integração Firebase, auth e dados
-src/styles/               base global e estilos por rota: layout, componentes, painel, modais, login e perfil
-src/utils/                formatação e funções auxiliares
-functions/src/            rotinas de backend futuras
-docs/                     requisitos, dados, regras e roadmap
+index.html                entrada do app
+firebase.json             hosting, regras, índices e functions
+firestore.rules           regras de segurança do Firestore
+firestore.indexes.json    índices compostos (vazio por enquanto)
+public/                   manifest, ícone e service worker
+src/app/                  main.js (rotas e navegação) e page-styles.js
+src/pages/<tela>/         index.html + <tela>.js
+                          login, dashboard, profile, accounts, commitments, goals, cards
+src/services/
+  firebase/               client.js, errors.js, firebase-config.js e firebase.js (ponto único de importação)
+  auth/                   login, cadastro, logout
+  database/               um arquivo por domínio do Firestore
+src/utils/                date.js, dom.js, format.js, toast.js
+src/styles/               main.css + core/, components/ e pages/
+functions/src/            index.js, schedules/, financial/, notifications/, lib/
+docs/                     requisitos, modelo de dados, regras financeiras, roadmap e organização
 ```
 
-## Próximas etapas
-
-1. Implementar contas, categorias e relatórios completos.
-2. Completar notificações push e preferências.
-3. Entregar os módulos familiar, cartões, dívidas e metas por etapas.
-
-Resumo, transações e compromissos usam Firestore. A automação de lembretes depende da implantação da Cloud Function; ela verifica os perfis de hora em hora e respeita o fuso escolhido. Metas ainda são demonstrativas; notificações são internas, sem push.
+Convenções e o mapa de pastas antigas para as novas estão em [docs/organizacao.md](docs/organizacao.md).

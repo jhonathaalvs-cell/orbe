@@ -1,25 +1,39 @@
 # Integração Firebase
 
-O cliente inicializa Firebase App, Authentication e Cloud Firestore com módulos ES importados da CDN oficial. Não é necessário colocar chaves privadas no navegador.
+O cliente inicializa Firebase App, Authentication e Cloud Firestore com módulos ES da CDN oficial. Não há chaves privadas no navegador.
 
-## Configuração local
+## Configuração
 
-Os valores públicos do app web ficam em `src/services/firebase/firebase-config.js`, incluído no repositório para permitir a execução no GitHub Pages. O arquivo `firebase-config.local.example.js` documenta os campos esperados. O ID e a API key web identificam o projeto no cliente; não concedem acesso ao Firestore sem usuário autenticado e regras de segurança.
+Os valores públicos do app web ficam em `src/services/firebase/firebase-config.js`, incluído no repositório para permitir a execução como site estático. `firebase-config.example.js` documenta os campos. A API key web identifica o projeto; sem usuário autenticado e sem passar pelas regras ela não dá acesso a dados.
 
-## Autenticação e dados
+## Onde fica cada coisa em `src/services/`
 
-- Provedor: e-mail e senha.
-- Perfil criado em `users/{uid}`.
-- Perfil com nome, moeda base, fuso horário e preferências dos lembretes.
-- Movimentações salvas em `users/{uid}/transactions/{transactionId}`.
-- Compromissos em `users/{uid}/commitments/{commitmentId}` e vencimentos em `occurrences/{YYYY-MM-DD}`.
-- Lembretes internos em `users/{uid}/notifications/{notificationId}` com IDs determinísticos para evitar duplicidade.
-- Regras negam o acesso anônimo, limitam o acesso ao `uid` autenticado e validam os campos escritos. Edição/exclusão de movimentações fica bloqueada até haver trilha de auditoria.
-- Confirmar pagamento atualiza o vencimento e cria a despesa atomicamente. O sistema nunca confirma pagamento pelo usuário.
-- Todas as outras coleções permanecem negadas até serem implementadas com regras próprias.
+| Arquivo | Responsabilidade |
+|---|---|
+| `firebase/client.js` | inicialização única (`auth`, `db`, `firebaseReady`) |
+| `firebase/errors.js` | traduz erros do Firebase em mensagens para a tela |
+| `firebase/firebase.js` | ponto único de importação usado pelas páginas |
+| `auth/auth.js` | login, cadastro, logout, redefinição de senha |
+| `database/*.js` | um arquivo por domínio: transactions, accounts (e transferências), goals, cards, commitments, notifications, profile |
 
-## Ativação no Console
+## Dados e regras
 
-Ative Email/Password em Authentication, crie o Cloud Firestore e publique `firestore.rules`. Para habilitar a automação, instale Node.js 22 e Firebase CLI e publique `firebase deploy --only firestore:rules,functions --project orbe-5fa05`. A função verifica os perfis de hora em hora e executa os lembretes às 08:00 no fuso de cada pessoa. Funções agendadas usam Cloud Scheduler e podem exigir o plano Blaze. Use localhost/HTTPS para servir o app; módulos não funcionam em `file://`.
+- Provedor: e-mail e senha. Perfil em `users/{uid}`.
+- Esquema completo em [banco-de-dados.md](banco-de-dados.md).
+- As regras negam acesso anônimo, limitam tudo ao `uid` dono do caminho e validam os campos escritos. Movimentações não podem ser editadas nem apagadas até existir trilha de auditoria.
+- Pagar compromisso e pagar fatura gravam o vencimento/fatura e a despesa na mesma operação. O sistema nunca confirma pagamento pelo usuário.
+- Qualquer outro caminho permanece negado.
 
-Analytics foi omitido da inicialização: não é necessário para login ou Firestore e pode ser ligado depois com atenção a consentimento, privacidade e compatibilidade do navegador.
+## Ativação
+
+Ative Email/Password em Authentication, crie o Cloud Firestore e publique regras e funções:
+
+```text
+firebase deploy --only firestore:rules,firestore:indexes,functions --project orbe-5fa05
+```
+
+Requer Node.js 22 e Firebase CLI. A função agendada roda de hora em hora e executa os lembretes às 08:00 no fuso de cada pessoa; Cloud Scheduler pode exigir o plano Blaze. Sirva o app por localhost/HTTPS; módulos não funcionam em `file://`.
+
+Para publicar o site: `firebase deploy --only hosting`. O arquivo `firebase.json` deixa de fora do site as regras, a pasta `functions/` e os documentos.
+
+Analytics ficou fora da inicialização: não é necessário para login nem Firestore e exige atenção a consentimento e privacidade.

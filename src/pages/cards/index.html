@@ -1,0 +1,107 @@
+<section class="cards-page" id="cardsRoot">
+  <div class="page-heading">
+    <div>
+      <div class="eyebrow"><span class="live-dot"></span> CARTÕES DE CRÉDITO</div>
+      <h1>Cartões</h1>
+      <p>Organize limites, compras e faturas. Os dados são inseridos manualmente.</p>
+    </div>
+    <div class="heading-actions"><button class="button button-quiet" id="newPurchase" type="button">＋ Registrar
+        compra</button><button class="button button-primary" id="newCard" type="button">＋ Novo cartão</button></div>
+  </div>
+  <div class="demo-notice"><span>ⓘ</span> Compras ficam como previsão. Ao confirmar o pagamento da fatura, uma única
+    despesa é lançada no histórico e descontada da conta escolhida. Nenhuma conexão bancária é feita.</div>
+  <section class="card-metrics" id="cardMetrics" aria-label="Resumo dos cartões"></section>
+  <section class="cards-section">
+    <div class="cards-section-heading">
+      <div>
+        <h2>Meus cartões</h2>
+        <p>Limite utilizado considera todas as faturas ainda não pagas.</p>
+      </div>
+    </div>
+    <div class="credit-card-grid" id="creditCardList">
+      <div class="panel empty-transactions">Carregando cartões...</div>
+    </div>
+  </section>
+  <section class="panel card-invoices-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Faturas</h2>
+        <p>Consulte compras agrupadas pelo fechamento do cartão.</p>
+      </div><label class="invoice-month-select">Mês da fatura<input id="invoiceMonth" type="month" /></label>
+    </div>
+    <div id="invoiceList" class="invoice-list">
+      <p class="empty-transactions">Carregando faturas...</p>
+    </div>
+  </section>
+  <section class="panel card-purchases-panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Compras recentes</h2>
+        <p>As compras só viram despesa quando a fatura é paga.</p>
+      </div>
+    </div>
+    <div id="cardPurchaseList" class="card-purchase-list">
+      <p class="empty-transactions">Carregando compras...</p>
+    </div>
+  </section>
+</section>
+<dialog id="cardDialog" class="modal card-dialog">
+  <form id="cardForm">
+    <div class="modal-heading">
+      <div><span class="eyebrow" id="cardFormEyebrow">NOVO CARTÃO</span>
+        <h2 id="cardFormTitle">Cadastrar cartão</h2>
+      </div><button class="icon-button card-close" type="button" aria-label="Fechar">×</button>
+    </div><label>Nome para identificar<input name="name" maxlength="50" required
+        placeholder="Ex.: Cartão principal" /></label>
+    <div class="form-row"><label>Bandeira<select name="brand" required>
+          <option value="visa">Visa</option>
+          <option value="mastercard">Mastercard</option>
+          <option value="elo">Elo</option>
+          <option value="amex">American Express</option>
+          <option value="other">Outra</option>
+        </select></label><label>Últimos 4 dígitos (opcional)<input name="lastFour" inputmode="numeric"
+          pattern="[0-9]{4}" maxlength="4" placeholder="1234" /></label></div><label>Limite total (R$)<input
+        name="creditLimit" type="number" min="0.01" max="1000000000" step="0.01" required /></label>
+    <div class="form-row"><label>Dia de fechamento<input name="closingDay" type="number" min="1" max="28"
+          required /></label><label>Dia de vencimento<input name="dueDay" type="number" min="1" max="28"
+          required /></label></div>
+    <p class="form-note">Use dias entre 1 e 28 para evitar diferenças entre os meses.</p>
+    <div class="modal-actions"><button class="button button-quiet card-close" type="button">Cancelar</button><button
+        class="button button-primary" type="submit">Salvar cartão</button></div>
+  </form>
+</dialog>
+<dialog id="purchaseDialog" class="modal card-dialog">
+  <form id="purchaseForm">
+    <div class="modal-heading">
+      <div><span class="eyebrow">NOVA COMPRA</span>
+        <h2>Registrar compra</h2>
+      </div><button class="icon-button purchase-close" type="button" aria-label="Fechar">×</button>
+    </div><label>Cartão<select name="cardId" required></select></label><label>Descrição<input name="description"
+        maxlength="80" required placeholder="Ex.: Compra no mercado" /></label>
+    <div class="form-row"><label>Valor (R$)<input name="amount" type="number" min="0.01" max="1000000000" step="0.01"
+          required /></label><label>Categoria<input name="category" maxlength="40" required
+          placeholder="Ex.: Alimentação" /></label></div><label>Data da compra<input name="date" type="date"
+        required /></label>
+    <div class="invoice-preview" id="invoicePreview">Escolha um cartão e uma data para ver em qual fatura a compra
+      entrará.</div>
+    <div class="modal-actions"><button class="button button-quiet purchase-close" type="button">Cancelar</button><button
+        class="button button-primary" type="submit">Salvar compra</button></div>
+  </form>
+</dialog>
+<dialog id="payInvoiceDialog" class="modal card-dialog">
+  <form id="payInvoiceForm">
+    <div class="modal-heading">
+      <div><span class="eyebrow">PAGAMENTO DA FATURA</span>
+        <h2>Confirmar pagamento</h2>
+      </div><button class="icon-button pay-invoice-close" type="button" aria-label="Fechar">×</button>
+    </div>
+    <p class="pay-invoice-context" id="payInvoiceContext"></p><label>Valor da fatura<input name="amount" type="text"
+        readonly /></label><label>Data do pagamento<input name="paidDate" type="date" required /></label><label
+      id="invoiceAccountField">Conta usada para pagar<select name="accountId"></select></label>
+    <p class="form-note">Confirmar registra uma única despesa com o total da fatura. As compras individuais permanecem
+      no histórico do cartão.</p>
+    <div class="modal-actions"><button class="button button-quiet pay-invoice-close"
+        type="button">Cancelar</button><button class="button button-primary" type="submit">Confirmar pagamento</button>
+    </div>
+  </form>
+</dialog>

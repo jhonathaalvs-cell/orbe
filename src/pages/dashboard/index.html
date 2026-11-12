@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="pt-BR">
 
 <head>
@@ -8,14 +8,14 @@
     <meta name="description" content="Resumo da sua vida financeira no Orbe." />
     <base href="../../../" />
     <title>Visão geral | Orbe</title>
-    <link rel="stylesheet" href="src/styles/base.css" />
-    <link rel="stylesheet" href="src/styles/layout.css" />
-    <link rel="stylesheet" href="src/styles/components.css" />
-    <link rel="stylesheet" href="src/styles/dashboard.css" />
-    <link rel="stylesheet" href="src/styles/dialogs.css" />
-    <link rel="stylesheet" href="src/styles/responsive.css" />
-    <link rel="stylesheet" href="src/styles/sidebar-nav.css" />
-    <link rel="stylesheet" href="src/styles/mobile-nav.css" />
+    <link rel="stylesheet" href="src/styles/core/base.css" />
+    <link rel="stylesheet" href="src/styles/core/layout.css" />
+    <link rel="stylesheet" href="src/styles/components/components.css" />
+    <link rel="stylesheet" href="src/styles/pages/dashboard.css" />
+    <link rel="stylesheet" href="src/styles/components/dialogs.css" />
+    <link rel="stylesheet" href="src/styles/core/responsive.css" />
+    <link rel="stylesheet" href="src/styles/components/sidebar-nav.css" />
+    <link rel="stylesheet" href="src/styles/components/mobile-nav.css" />
 </head>
 
 <body data-standalone-dashboard="true">
@@ -423,8 +423,8 @@
         <div class="toast" id="toast" role="status"></div>
     </main>
     <script type="module">
-        import { firebaseReady, observeAuth } from "src/services/firebase/firebase.js";
-        import { mountDashboardPage } from "src/pages/dashboard/dashboard.js";
+        import { firebaseReady, observeAuth } from "./src/services/firebase/firebase.js";
+        import { mountDashboardPage } from "./src/pages/dashboard/dashboard.js";
 
         const root = document.querySelector("#dashboardRoot");
 
@@ -436,7 +436,7 @@
         }
 
         if (!firebaseReady) {
-            showMessage("O Firebase não está configurado. Configure src/services/firebase/firebase-config.local.js para abrir o painel.");
+            showMessage("O Firebase não está configurado. Configure src/services/firebase/firebase-config.js para abrir o painel.");
         } else {
             observeAuth(async (user) => {
                 if (!user) {

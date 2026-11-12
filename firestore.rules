@@ -49,7 +49,7 @@ service cloud.firestore {
             && data.type in ['income', 'expense']
             && data.description is string
             && data.description.size() > 0
-            && data.description.size() <= 50
+            && data.description.size() <= 80
             && data.category is string
             && data.category.size() > 0
             && data.category.size() <= 40

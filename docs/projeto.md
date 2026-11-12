@@ -1,6 +1,6 @@
 # Projeto Orbe
 
-Plataforma web responsiva de organização financeira pessoal e familiar, preparada para instalação como PWA. O documento funcional integral recebido está reproduzido em `requisitos.md`.
+Plataforma web responsiva de organização financeira pessoal e familiar, preparada para instalação como PWA. O documento funcional integral recebido está reproduzido em `projeto-original.txt` e resumido em `requisitos.md`.
 
 ## Princípios
 
@@ -10,9 +10,9 @@ Plataforma web responsiva de organização financeira pessoal e familiar, prepar
 - Dados pessoais e familiares devem permanecer separados e respeitar permissões.
 - Previsões são estimativas; avaliações anteriores precisam preservar seu conteúdo.
 
-## Decisões iniciais
+## Decisões
 
-- A primeira entrega é um protótipo de interface estático, sem dependências externas obrigatórias de execução.
-- Receitas e despesas criadas no protótipo são guardadas no navegador e não são sincronizadas.
-- Firebase é a arquitetura alvo; nenhum projeto ou segredo Firebase foi fornecido.
-- Os números exibidos no painel são demonstrativos.
+- Frontend estático (HTML, CSS e módulos ES), sem etapa de build.
+- Firebase Authentication e Cloud Firestore guardam os dados; os números do painel vêm dos registros de cada usuário.
+- Cloud Functions cuidam do que não pode depender do navegador (vencimentos e lembretes).
+- Nenhuma chave privada vai para o navegador; a proteção dos dados está em `firestore.rules`.

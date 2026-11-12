@@ -28,7 +28,7 @@ export function mountLoginPage() {
     event.preventDefault();
     if (!authForm.reportValidity()) return;
     if (!firebaseReady) {
-      authError.textContent = "Firebase não configurado. Preencha src/services/firebase/firebase-config.local.js.";
+      authError.textContent = "Firebase não configurado. Preencha src/services/firebase/firebase-config.js.";
       authError.hidden = false;
       return;
     }
